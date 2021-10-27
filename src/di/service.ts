@@ -1,10 +1,17 @@
-
 import { DispatchEvent, Container, HandlerRegistry } from "./di"
-
-import { ANONYMOUS, Principal } from '../security/security'
-
+import { Principal, ANONYMOUS } from '../security/security'
 
 export const ROOT = Zone.current
+
+export type Authenticator = (e: DispatchEvent) => Principal | PromiseLike<Principal>
+export const DEFAULT_AUTHENTICATOR = (e: DispatchEvent) => {
+  // enable logging eventually 
+  return ANONYMOUS as Principal
+}
+
+export interface AppInitContext {
+  authenticate: Authenticator
+}
 
 
 export type InitContext = {
@@ -15,16 +22,6 @@ export type InitContext = {
 export interface InitHandler {
   (context: InitContext): Promise<unknown>
 }
-
-export interface AppInitContext {
-  authenticate: (e: DispatchEvent) => Principal | PromiseLike<Principal>
-}
-
-export const DEFAULT_AUTHENTICATOR = (e: DispatchEvent) => {
-  // enable logging eventually 
-  return ANONYMOUS as Principal
-}
-
 
 export class Service {
 

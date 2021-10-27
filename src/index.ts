@@ -1,9 +1,7 @@
 import 'zone.js'
 import 'reflect-metadata'
 
-import * as di from './di/di'
-import * as security from './security/security'
-
-export { di, security }
-
-export default { di, security }
+import * as DI from './di/di'
+import security, * as Security from './security/security'
+export { security, DI, Security }
+export default { security, DI, Security }

@@ -1,10 +1,11 @@
 
 import Container from './Container'
-import HandlerRegistry from './HandlerRegistry'
+import HandlerRegistry from './registry'
 import { Inject, Metadata, getInjectables } from './annotations'
-import service from '../zones/service'
+import service from './service'
 
 export {
+  service,
   Container,
   HandlerRegistry,
   Inject, Metadata,

@@ -1,4 +1,3 @@
-import service from '../di/service'
 
 export type Permission = String
 
@@ -87,12 +86,10 @@ export class IntegrationPrincipal extends BasePrincipal {
   }
 }
 
-
-
-class SecurityService {
+export class SecurityService {
 
   get principal() {
-    const principal: Principal | undefined = service.get('principal')
+    const principal: Principal | undefined = Zone.current.get('principal')
     return principal || ANONYMOUS
   }
 
@@ -101,6 +98,5 @@ class SecurityService {
   }
 
 }
-
 
 export default new SecurityService()
