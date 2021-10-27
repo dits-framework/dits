@@ -1,11 +1,10 @@
 {
   "name": "@dits/dits",
-  "version": "0.0.10",
-  "main": "lib/dits.js",
-  "module": "lib/dits.esm.js",
+  "version": "0.0.1",
+  "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc && rollup -c"
+    "build": "tsc"
   },
   "author": "hexly",
   "license": "ISC",
@@ -13,8 +12,6 @@
     "@types/jest": "^27.0.2",
     "@types/reflect-metadata": "^0.1.0",
     "jest": "^27.3.1",
-    "rollup": "^2.58.0",
-    "rollup-plugin-typescript2": "^0.30.0",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.4.0",
     "tslint": "^6.1.3",
