@@ -1,9 +1,8 @@
-import 'zone.js'
-import Container from "../di/Container"
-import { DispatchEvent, Handler, HandlerRegistry } from '../index'
-import { ANONYMOUS, AnonymousPrincipal, Principal } from '../security/security'
 
-// declare var Zone: any
+import { DispatchEvent, Container, HandlerRegistry } from "./di"
+
+import { ANONYMOUS, Principal } from '../security/security'
+
 
 export const ROOT = Zone.current
 
@@ -21,15 +20,15 @@ export interface AppInitContext {
   authenticate: (e: DispatchEvent) => Principal | PromiseLike<Principal>
 }
 
-export const DEFAULT_AUTHENTICATOR = <E extends DispatchEvent>(e: E) => {
+export const DEFAULT_AUTHENTICATOR = (e: DispatchEvent) => {
   // enable logging eventually 
-  return ANONYMOUS
+  return ANONYMOUS as Principal
 }
 
 
 export class Service {
 
-  public anonymous = ANONYMOUS
+  // public anonymous = ANONYMOUS
   public context?: AppInitContext
   public zone?: Zone
   public container?: Container

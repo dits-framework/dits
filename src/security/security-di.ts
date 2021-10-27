@@ -1,5 +1,5 @@
-import { DispatchEvent, DispatchEventHof, HandlerDeclaration } from "../di/di"
-import security, { Permission } from "./security"
+import security, { Permission } from './security'
+import { DispatchEvent, HandlerDeclaration } from '../di/di'
 
 export type HasAnyConfiguration = {
   permissions: Permission[]

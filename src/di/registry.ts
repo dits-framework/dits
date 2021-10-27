@@ -1,6 +1,5 @@
-import { DispatchEvent, HandlerDeclaration } from './di';
 
-
+import { DispatchEvent, HandlerDeclaration } from './di'
 
 interface EventConstructor<E extends DispatchEvent> {
   new(...args: any[]): E;

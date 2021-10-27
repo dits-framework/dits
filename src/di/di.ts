@@ -1,11 +1,14 @@
-import 'reflect-metadata'
-import zones from '../zones/service'
+
 import Container from './Container'
 import HandlerRegistry from './HandlerRegistry'
+import { Inject, Metadata, getInjectables } from './annotations'
+import service from '../zones/service'
 
-import { Metadata, getInjectables } from './annotations'
-
-// export const HANDLERS = new HandlerRegistry()
+export {
+  Container,
+  HandlerRegistry,
+  Inject, Metadata,
+}
 
 export const DEK_KEY = Symbol("dek");
 export class DispatchEvent {
@@ -43,7 +46,7 @@ export interface HandlerDeclaration<E extends DispatchEvent> {
 }
 
 export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]) {
-  const zc: Container | undefined = zones.container
+  const zc: Container | undefined = service.container
   // const zc: Container | undefined = zones.get('container')
   if (!zc) {
     throw new Error('Could not initialize handler: no zone container found; are you sure you are running inside `initApp` handler?')
@@ -125,7 +128,7 @@ async function resolveDependencies<E extends DispatchEvent>(declaration: Handler
     .forEach((diType, idxOffByOne) => {
       const idx = idxOffByOne + 1
       if (results[idx] === null || results[idx] === undefined) {
-        const container: Container = zones.getOrThrow('container')
+        const container: Container = service.getOrThrow('container')
         const lookup = container.get(diType)
         // const lookup = REGISTRY.get(diType)
         // console.log('need to inject', idx, diType, REGISTRY, 'found', lookup)

@@ -1,10 +1,10 @@
 {
   "name": "@dits/dits",
-  "version": "0.0.1",
+  "version": "0.0.1000",
   "main": "lib/index.js",
   "module": "lib/index.esm.js",
   "scripts": {
-    "build": "rollup -c"
+    "build": "tsc && rollup -c"
   },
   "author": "hexly",
   "license": "ISC",
