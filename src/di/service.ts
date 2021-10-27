@@ -30,6 +30,7 @@ export class Service {
   public zone?: Zone
   public container?: Container
   private properties?: any
+  public config?: dits.config.Configuration
 
   withProperties(props: any) {
     if (this.properties) {
@@ -38,8 +39,31 @@ export class Service {
     this.properties = props
   }
 
-  init(handler?: InitHandler, appCtx: AppInitContext = { authenticate: DEFAULT_AUTHENTICATOR }) {
+  init(config: dits.config.Configuration, handler?: InitHandler): Promise<unknown>
+  init(
+    config: dits.config.Configuration,
+    appCtxOrHandler?: AppInitContext | InitHandler | undefined,
+    handler?: InitHandler,
+  ) {
 
+    let appContext: AppInitContext | undefined
+
+    // figure out which method they called
+    if (appCtxOrHandler && (appCtxOrHandler as AppInitContext).authenticate) {
+      // appCtx is good
+      appContext = appCtxOrHandler as AppInitContext
+    } else if (appCtxOrHandler instanceof Function) {
+      handler = appCtxOrHandler as InitHandler
+    }
+
+    if (!appContext) {
+      appContext = { authenticate: DEFAULT_AUTHENTICATOR }
+    }
+
+    // if they're not interested in a callback, do nothing
+    if (!handler) {
+      handler = async () => ({ container: this.container!, zone: this.zone! })
+    }
 
     if (!handler || !(handler instanceof Function)) {
       throw new Error('Must provide a valid callable handler')
@@ -64,7 +88,8 @@ export class Service {
       this.container?.register(HandlerRegistry, registry)
     }
 
-    this.context = appCtx
+    this.config = config
+    this.context = appContext
     this.properties = properties
     this.zone = Zone.current.fork({
       name: 'app',
@@ -72,9 +97,13 @@ export class Service {
     })
     Object.seal(this)
 
-    return this.zone.run(() => {
-      return handler!({ container: this.container!, zone: this.zone! })
-    })
+    // return this.zone.runGuarded(() => {
+    //   // const h = this.zone!.wrap(handler!, 'dits-service?')
+    //   // console.log('running in zone', this.zone?.name)
+    //   // return h(({ container: this.container!, zone: this.zone! }))
+    //   return handler!(({ container: this.container!, zone: this.zone! }))
+    // })
+    return this.zone.runGuarded(handler, this, [{ container: this.container!, zone: this.zone! }])
   }
 
   fork(name: string, properties: any = {}, extra: any = {}) {

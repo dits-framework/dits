@@ -25,6 +25,7 @@ export type DispatchEventHof<E extends DispatchEvent> =
 export interface DispatchPredicate<E extends DispatchEvent> {
   (event: E, declaration: HandlerDeclaration<E>): boolean | DispatchPredicateVote;
 }
+
 export class DispatchPredicateVote {
   constructor(
     public proceed: boolean,
