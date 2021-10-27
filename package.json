@@ -1,9 +1,9 @@
 {
   "name": "@dits/dits",
-  "version": "0.0.1000",
-  "main": "lib/index.js",
-  "module": "lib/index.esm.js",
-  "type": "commonjs",
+  "version": "0.0.10",
+  "main": "lib/dits.js",
+  "module": "lib/dits.esm.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc && rollup -c"
   },
