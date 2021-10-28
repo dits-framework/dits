@@ -1,5 +1,5 @@
 
-import Container from './Container'
+import Container from './container'
 import HandlerRegistry from './registry'
 import ComponentRegistry from '../component/registry'
 import { Component } from '../component/component'
