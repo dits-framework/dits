@@ -1,4 +1,5 @@
-import 'zone.js'
+// MOST IMPORTANT THING: we load and hotpatch zone.js FIRST
+import ZoneHook from './zones/zones'
 import 'reflect-metadata'
 
 import * as DI from './di/di'
@@ -18,5 +19,8 @@ type Config = dits.config.Configuration
 
 import security, * as Security from './security/security'
 
-export { security, DI, Config, Security }
-export default { security, DI, Security }
+const { service, Inject, Component } = DI
+
+export { service, Inject, Component, security, DI, Config, Security, ZoneHook }
+
+export default service

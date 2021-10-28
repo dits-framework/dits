@@ -1,5 +1,8 @@
-import { DispatchEvent, Container, HandlerRegistry } from "./di"
+import '../zones/zones'
+import { DispatchEvent, Container, HandlerRegistry, ComponentRegistry } from "./di"
 import { Principal, ANONYMOUS } from '../security/security'
+
+import EventEmitter from 'events'
 
 export const ROOT = Zone.current
 
@@ -23,6 +26,9 @@ export interface InitHandler {
   (context: InitContext): Promise<unknown>
 }
 
+/**
+ * Represents a running application context
+ */
 export class Service {
 
   // public anonymous = ANONYMOUS
@@ -32,6 +38,8 @@ export class Service {
   private properties?: any
   public config?: dits.config.Configuration
 
+  private events = new EventEmitter()
+
   withProperties(props: any) {
     if (this.properties) {
       throw new Error('Cannot specify app zone properties multiple times')
@@ -40,7 +48,7 @@ export class Service {
   }
 
   init(config: dits.config.Configuration, handler?: InitHandler): Promise<unknown>
-  init(
+  async init(
     config: dits.config.Configuration,
     appCtxOrHandler?: AppInitContext | InitHandler | undefined,
     handler?: InitHandler,
@@ -82,10 +90,16 @@ export class Service {
 
     this.container = properties.container
 
-    let registry = this.container?.get(HandlerRegistry)
-    if (!registry) {
-      registry = new HandlerRegistry()
-      this.container?.register(HandlerRegistry, registry)
+    let handlers = this.container?.get(HandlerRegistry)
+    if (!handlers) {
+      handlers = new HandlerRegistry()
+      this.container?.register(HandlerRegistry, handlers)
+    }
+
+    let components = this.container?.get(ComponentRegistry)
+    if (!components) {
+      components = new ComponentRegistry()
+      this.container?.register(ComponentRegistry, components)
     }
 
     this.config = config
@@ -95,15 +109,35 @@ export class Service {
       name: 'app',
       properties
     })
-    Object.seal(this)
 
-    // return this.zone.runGuarded(() => {
-    //   // const h = this.zone!.wrap(handler!, 'dits-service?')
-    //   // console.log('running in zone', this.zone?.name)
-    //   // return h(({ container: this.container!, zone: this.zone! }))
-    //   return handler!(({ container: this.container!, zone: this.zone! }))
-    // })
-    return this.zone.runGuarded(handler, this, [{ container: this.container!, zone: this.zone! }])
+    try {
+      this.emit('pre-initialization', this)
+      await Promise.all(this.handlerPromises)
+      this.handlerPromises.length = 0
+    } catch (err) {
+      console.warn('Failed pre-initialization', this.handlerPromises, err)
+      throw new Error('PreInitialization failed')
+    }
+
+    try {
+      this.emit('initializing', this)
+      await Promise.all(this.handlerPromises)
+      this.handlerPromises.length = 0
+    } catch (err) {
+      console.warn('Failed initialization', this.handlerPromises, err)
+      throw new Error('Initialization failed')
+    }
+
+    try {
+      this.emit('initialized', this)
+      await Promise.all(this.handlerPromises)
+      this.handlerPromises.length = 0
+    } catch (err) {
+      console.warn('Failed post-initializion', this.handlerPromises, err)
+      throw new Error('PostInitialization failed')
+    }
+
+    return this.zone.run(handler, this, [{ container: this.container!, zone: this.zone! }])
   }
 
   fork(name: string, properties: any = {}, extra: any = {}) {
@@ -129,6 +163,29 @@ export class Service {
 
   get current() {
     return Zone.current
+  }
+
+  onPreInitialization(handler: (...args: any[]) => unknown) {
+    this.registerHandler('pre-initialization', handler)
+  }
+
+  onInitializing(handler: (...args: any[]) => unknown) {
+    this.registerHandler('initializing', handler)
+  }
+
+
+  private handlerPromises: any[] = []
+  private registerHandler(event: 'pre-initialization' | 'initializing' | 'initialized', handler: (...args: any[]) => unknown) {
+    this.events.once(event, (...args) => {
+      const handlerResult = handler(...args)
+      this.handlerPromises.push(handlerResult)
+    })
+  }
+
+  private emit(event: string, ...args: any[]) {
+    // console.log('emiting', event, args.length, this.handlerPromises.length)
+    this.events.emit(event, ...args)
+    // console.log('emitted', event, args.length, this.handlerPromises.length)
   }
 
 }

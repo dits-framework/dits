@@ -1,6 +1,8 @@
 
 import Container from './Container'
 import HandlerRegistry from './registry'
+import ComponentRegistry from '../component/registry'
+import { Component } from '../component/component'
 import { Inject, Metadata, getInjectables } from './annotations'
 import service from './service'
 
@@ -8,7 +10,8 @@ export {
   service,
   Container,
   HandlerRegistry,
-  Inject, Metadata,
+  ComponentRegistry,
+  Inject, Metadata, Component,
 }
 
 export const DEK_KEY = Symbol("dek");
@@ -47,63 +50,70 @@ export interface HandlerDeclaration<E extends DispatchEvent> {
   metadata: any
 }
 
-export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]) {
-  const zc: Container | undefined = service.container
-  // const zc: Container | undefined = zones.get('container')
-  if (!zc) {
-    throw new Error('Could not initialize handler: no zone container found; are you sure you are running inside `initApp` handler?')
-  }
 
-  const registry: HandlerRegistry | undefined = zc.get(HandlerRegistry)
-  if (!registry) {
-    throw new Error('Could not initialize handler: no zone handler registry found; are you sure you are running inside `initApp` handler?')
-  }
+type HandlerWrapper = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => unknown
+
+export function Handler<E extends DispatchEvent>(): HandlerWrapper
+export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]): HandlerWrapper {
+  // const zc: Container | undefined = service.container
+  // // const zc: Container | undefined = zones.get('container')
+  // if (!zc) {
+  //   throw new Error('Could not initialize handler: no zone container found; are you sure you are running inside `initApp` handler?')
+  // }
+
+  // const registry: HandlerRegistry | undefined = zc.get(HandlerRegistry)
+  // if (!registry) {
+  //   throw new Error('Could not initialize handler: no zone handler registry found; are you sure you are running inside `initApp` handler?')
+  // }
   return function dynamicHandler(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const paramTypes = Reflect.getMetadata("design:paramtypes", target, propertyKey) as any[]
+    service.onInitializing(() => {
+      const paramTypes = Reflect.getMetadata("design:paramtypes", target, propertyKey) as any[]
 
-    const eventType = paramTypes[0]
-    if (!eventType) {
-      console.warn(`Could not configure @Handler on ${target?.constructor?.name}:${propertyKey}(...)`)
-      throw new Error('Unexpected params')
-    }
+      const eventType = paramTypes[0]
+      if (!eventType) {
+        console.warn(`Could not configure @Handler on ${target?.constructor?.name}:${propertyKey}(...)`)
+        throw new Error('Unexpected params')
+      }
 
-    let proto = eventType
-    while (proto && proto != DispatchEvent) {
-      proto = Object.getPrototypeOf(eventType)
-    }
+      let proto = eventType
+      while (proto && proto != DispatchEvent) {
+        proto = Object.getPrototypeOf(eventType)
+      }
 
-    if (!proto) {
-      console.warn(`First parameter of @Handler on ${target?.constructor?.name}:${propertyKey}(...) must be a "DispatchEvent"; received ${eventType?.name || 'unknown'}`)
-      throw new Error('Unexpected params')
-    }
+      if (!proto) {
+        console.warn(`First parameter of @Handler on ${target?.constructor?.name}:${propertyKey}(...) must be a "DispatchEvent"; received ${eventType?.name || 'unknown'}`)
+        throw new Error('Unexpected params')
+      }
 
-    const originalFn = descriptor.value!
-    const injectParamsIdx: number[] = getInjectables(target, propertyKey) || []
-    const dependencies = injectParamsIdx.map(idx => paramTypes[idx])
+      const originalFn = descriptor.value!
+      const injectParamsIdx: number[] = getInjectables(target, propertyKey) || []
+      const dependencies = injectParamsIdx.map(idx => paramTypes[idx])
 
-    const metadata = Metadata.retrieveMetadata(target, propertyKey)
+      const metadata = Metadata.retrieveMetadata(target, propertyKey)
 
-    const decl: HandlerDeclaration<E> = {
-      event: eventType,
-      handler: descriptor.value, // will get overwritten
-      predicates,
-      // paramTypes,
-      // injectParamsIdx,
-      dependencies,
-      target,
-      propertyKey,
-      method: originalFn,
-      metadata,
-    }
+      const decl: HandlerDeclaration<E> = {
+        event: eventType,
+        handler: descriptor.value, // will get overwritten
+        predicates,
+        // paramTypes,
+        // injectParamsIdx,
+        dependencies,
+        target,
+        propertyKey,
+        method: originalFn,
+        metadata,
+      }
 
-    // descriptor.value = invocationInjector(paramTypes, injectParamsIdx, originalFn, predicates)
-    descriptor.value = invocationInjector(target, eventType, decl)
-    decl.handler = descriptor.value
+      // descriptor.value = invocationInjector(paramTypes, injectParamsIdx, originalFn, predicates)
+      descriptor.value = invocationInjector(target, eventType, decl)
+      decl.handler = descriptor.value
 
-    // allow customization of what type of event is being registered for the handler
-    const registerType = Reflect.getMetadata(REGISTER_AS_META_KEY, target, propertyKey) || eventType
+      // allow customization of what type of event is being registered for the handler
+      const registerType = Reflect.getMetadata(REGISTER_AS_META_KEY, target, propertyKey) || eventType
 
-    registry.register(registerType, decl)
+      const registry = service.container!.getOrThrow(HandlerRegistry, 'Could not locate service Handler Registry; Are you importing files outside app scope?')
+      registry.register(registerType, decl)
+    })
   }
 }
 

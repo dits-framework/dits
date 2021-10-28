@@ -4,6 +4,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
+    "dev": "tsc --watch",
     "build": "tsc"
   },
   "author": "hexly",

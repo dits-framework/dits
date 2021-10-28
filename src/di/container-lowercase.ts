@@ -16,10 +16,10 @@ export default class Container {
     return thing as T | undefined;
   }
 
-  getOrThrow<T>(key: { new(...args: any[]): unknown; }) {
+  getOrThrow<T>(key: { new(...args: any[]): T; }, errMessage?: string) {
     const s = this.get(key);
     if (!s) {
-      throw new Error('Could not locate dependency by key ' + key);
+      throw new Error(errMessage || 'Could not locate dependency by key ' + key);
     }
     return s as T;
   }
