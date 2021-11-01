@@ -17,9 +17,11 @@ export interface AppInitContext {
 }
 
 
-export type InitContext = {
-  container: Container,
-  zone: Zone
+export class InitContext {
+  constructor(
+    public container: Container,
+    public zone: Zone
+  ) { }
 }
 
 export interface InitHandler {
@@ -40,6 +42,13 @@ export class Service {
 
   private events = new EventEmitter()
 
+  private resolver: undefined | ((value: unknown) => void)
+  private rejector: undefined | ((value: Error | any | void) => void)
+  public promise = new Promise((res, rej) => {
+    this.resolver = res
+    this.rejector = rej
+  })
+
   withProperties(props: any) {
     if (this.properties) {
       throw new Error('Cannot specify app zone properties multiple times')
@@ -49,95 +58,58 @@ export class Service {
 
   init(config: dits.config.Configuration, handler?: InitHandler): Promise<unknown>
   async init(
-    config: dits.config.Configuration,
-    appCtxOrHandler?: AppInitContext | InitHandler | undefined,
-    handler?: InitHandler,
+    cfg: dits.config.Configuration,
+    cOrH?: AppInitContext | InitHandler | undefined,
+    h?: InitHandler,
   ) {
+    try {
+      const { config, context, handler } = this.parseParameters(cfg, cOrH, h)
+      const properties = this.parseProperties()
+      this.container = properties.container
 
-    let appContext: AppInitContext | undefined
-
-    // figure out which method they called
-    if (appCtxOrHandler && (appCtxOrHandler as AppInitContext).authenticate) {
-      // appCtx is good
-      appContext = appCtxOrHandler as AppInitContext
-    } else if (appCtxOrHandler instanceof Function) {
-      handler = appCtxOrHandler as InitHandler
-    }
-
-    if (!appContext) {
-      appContext = { authenticate: DEFAULT_AUTHENTICATOR }
-    }
-
-    // if they're not interested in a callback, do nothing
-    if (!handler) {
-      handler = async () => ({ container: this.container!, zone: this.zone! })
-    }
-
-    if (!handler || !(handler instanceof Function)) {
-      throw new Error('Must provide a valid callable handler')
-    }
-
-    const properties = { ...(this.properties || {}) }
-    if (properties?.container) {
-      if (properties.container instanceof Container) {
-        // using preconfigured
-      } else {
-        throw new Error('Cannot provide a pre-configured container that does not extend Container')
+      if (!this.container) {
+        throw new Error('A container must be provided')
       }
-    } else {
-      properties.container = new Container()
-    }
 
-    this.container = properties.container
+      // register a app-level handler registry
+      let handlers = this.container?.get(HandlerRegistry)
+      if (!handlers) {
+        handlers = new HandlerRegistry()
+        this.container?.register(HandlerRegistry, handlers)
+      }
 
-    let handlers = this.container?.get(HandlerRegistry)
-    if (!handlers) {
-      handlers = new HandlerRegistry()
-      this.container?.register(HandlerRegistry, handlers)
-    }
+      // register an app-level component registry
+      let components = this.container?.get(ComponentRegistry)
+      if (!components) {
+        components = new ComponentRegistry()
+        this.container?.register(ComponentRegistry, components)
+      }
 
-    let components = this.container?.get(ComponentRegistry)
-    if (!components) {
-      components = new ComponentRegistry()
-      this.container?.register(ComponentRegistry, components)
-    }
+      // setup our properties for the Zone itself
+      this.config = config
+      this.context = context
+      this.properties = properties
+      this.zone = Zone.current.fork({
+        name: 'app',
+        properties
+      })
 
-    this.config = config
-    this.context = appContext
-    this.properties = properties
-    this.zone = Zone.current.fork({
-      name: 'app',
-      properties
-    })
+      return this.zone.run(async () => {
+        //! TODO rework this properly
+        // fire some ghetto lifecycle messages 
+        await this.emitLifecycle('pre-initialization')
+        await this.emitLifecycle('initializing')
+        await this.emitLifecycle('initialized')
 
-    try {
-      this.emit('pre-initialization', this)
-      await Promise.all(this.handlerPromises)
-      this.handlerPromises.length = 0
+        // signal that the service itself is ready to go
+        this.resolver && this.resolver(undefined)
+
+        // invoke the "service is live" handler
+        return this.zone!.run(handler!, this, [new InitContext(this.container!, this.zone!)])
+      }, this)
     } catch (err) {
-      console.warn('Failed pre-initialization', this.handlerPromises, err)
-      throw new Error('PreInitialization failed')
+      this.rejector!(err)
     }
-
-    try {
-      this.emit('initializing', this)
-      await Promise.all(this.handlerPromises)
-      this.handlerPromises.length = 0
-    } catch (err) {
-      console.warn('Failed initialization', this.handlerPromises, err)
-      throw new Error('Initialization failed')
-    }
-
-    try {
-      this.emit('initialized', this)
-      await Promise.all(this.handlerPromises)
-      this.handlerPromises.length = 0
-    } catch (err) {
-      console.warn('Failed post-initializion', this.handlerPromises, err)
-      throw new Error('PostInitialization failed')
-    }
-
-    return this.zone.run(handler, this, [{ container: this.container!, zone: this.zone! }])
   }
 
   fork(name: string, properties: any = {}, extra: any = {}) {
@@ -174,6 +146,19 @@ export class Service {
   }
 
 
+
+  //! TODO rework this with proper lifecycles
+  private async emitLifecycle(hook: string) {
+    try {
+      this.emit(hook, this)
+      await Promise.all(this.handlerPromises)
+      this.handlerPromises.length = 0
+    } catch (err) {
+      console.warn('Failed to process handler promises for ' + hook, this.handlerPromises, err)
+      throw new Error(hook + ' failed')
+    }
+  }
+
   private handlerPromises: any[] = []
   private registerHandler(event: 'pre-initialization' | 'initializing' | 'initialized', handler: (...args: any[]) => unknown) {
     this.events.once(event, (...args) => {
@@ -183,10 +168,55 @@ export class Service {
   }
 
   private emit(event: string, ...args: any[]) {
-    // console.log('emiting', event, args.length, this.handlerPromises.length)
     this.events.emit(event, ...args)
-    // console.log('emitted', event, args.length, this.handlerPromises.length)
   }
+
+  private parseParameters(config: dits.config.Configuration,
+    appCtxOrHandler?: AppInitContext | InitHandler | undefined,
+    handler?: InitHandler) {
+    let appContext: AppInitContext | undefined
+
+    // figure out which method they called
+    if (appCtxOrHandler && (appCtxOrHandler as AppInitContext).authenticate) {
+      // appCtx is good
+      appContext = appCtxOrHandler as AppInitContext
+    } else if (appCtxOrHandler instanceof Function) {
+      handler = appCtxOrHandler as InitHandler
+    }
+
+    if (!appContext) {
+      appContext = { authenticate: DEFAULT_AUTHENTICATOR }
+    }
+
+    // if they're not interested in a callback, do nothing
+    if (!handler) {
+      handler = async () => ({ container: this.container!, zone: this.zone! })
+    }
+
+    if (!handler || !(handler instanceof Function)) {
+      throw new Error('Must provide a valid callable handler')
+    }
+    return {
+      config: config as dits.config.Configuration,
+      context: appContext as AppInitContext,
+      handler: handler as InitHandler,
+    }
+  }
+
+  private parseProperties() {
+    const properties = { ...(this.properties || {}) }
+    if (properties?.container) {
+      if (properties.container instanceof Container) {
+        // using preconfigured
+      } else {
+        throw new Error('Cannot provide a pre-configured container that does not extend Container')
+      }
+    } else {
+      properties.container = new Container()
+    }
+    return properties
+  }
+
 
 }
 

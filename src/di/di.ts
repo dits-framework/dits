@@ -53,7 +53,6 @@ export interface HandlerDeclaration<E extends DispatchEvent> {
 
 type HandlerWrapper = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => unknown
 
-export function Handler<E extends DispatchEvent>(): HandlerWrapper
 export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]): HandlerWrapper {
   // const zc: Container | undefined = service.container
   // // const zc: Container | undefined = zones.get('container')

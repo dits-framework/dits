@@ -43,9 +43,7 @@ export default class SmartProxy<T extends Record<string | symbol, any>> {
         let target = smartProxy.target
         if (property === TARGET_KEY) {
           target = value;
-        }
-
-        if (target && property && target[property]) {
+        } else if (target && property) {
           // @ts-ignore
           target[property] = value
         }

@@ -13,9 +13,10 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-          scope: '@dits'
-      - run: npm install
+          scope: '@dits' 
+      - run: npm install --only=prod
       - run: npm run build
+      - run: rm -rf src .git .github
 
       - name: Set Build Number
         id: set-build-num

@@ -10,8 +10,8 @@
   "author": "hexly",
   "license": "ISC",
   "devDependencies": {
-    "@types/bluebird": "^3.5.36",
     "@types/jest": "^27.0.2",
+    "@types/node": "^16.11.6",
     "@types/reflect-metadata": "^0.1.0",
     "jest": "^27.3.1",
     "ts-jest": "^27.0.7",
@@ -23,8 +23,8 @@
     "lib": "lib"
   },
   "dependencies": {
-    "bluebird": "^3.7.2",
     "reflect-metadata": "^0.1.13",
+    "tslib": "^1.14.1",
     "zone.js": "^0.11.4"
   },
   "description": ""
