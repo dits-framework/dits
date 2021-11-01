@@ -1,2 +1,2 @@
-/// <reference path = "di/di.ns.d.ts" />
-/// <reference path = "config/config.ns.d.ts" />
+/// <reference path = "../ns/di.ns.d.ts" />
+/// <reference path = "../ns/config.ns.d.ts" />

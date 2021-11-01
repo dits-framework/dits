@@ -1,6 +1,9 @@
 {
   "include": [
-    "src"
+    "src",
+    "src/dits.ns.ts",
+    "ns/di.ns.d.ts",
+    "ns/config.ns.d.ts"
   ],
   "exclude": [
     "node_modules",
