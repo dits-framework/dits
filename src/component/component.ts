@@ -72,8 +72,7 @@ export function Component<T>(...nameOrHints: (string | Hint<T>)[]): Wrapper<T> {
       if (!service.container) {
         throw new Error('Could not locate service Container nor ComponentRegistry. Are you importing files outside of the App zone?')
       }
-      const registry = service.container!.getOrThrow(ComponentRegistry, 'Could not locate service Component Registry; Are you importing files outside app scope?')
-      registry.register(constructor, cd)
+      service.components.register(constructor, cd)
     })
 
 

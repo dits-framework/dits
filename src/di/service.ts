@@ -39,6 +39,10 @@ export class Service {
   // public anonymous = ANONYMOUS
   public context?: AppInitContext
   public zone?: Zone
+
+  public handlers = new HandlerRegistry()
+  public components = new ComponentRegistry()
+
   public container?: Container
   private properties?: any
   public config?: dits.config.Configuration
@@ -84,20 +88,6 @@ export class Service {
 
       if (!this.container) {
         throw new Error('A container must be provided')
-      }
-
-      // register a app-level handler registry
-      let handlers = this.container?.get(HandlerRegistry)
-      if (!handlers) {
-        handlers = new HandlerRegistry()
-        this.container!.register(HandlerRegistry, handlers)
-      }
-
-      // register an app-level component registry
-      let components = this.container?.get(ComponentRegistry)
-      if (!components) {
-        components = new ComponentRegistry()
-        this.container!.register(ComponentRegistry, components)
       }
 
       // setup our properties for the Zone itself
