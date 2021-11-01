@@ -6,6 +6,8 @@ import { Component } from '../component/component'
 import { Inject, Metadata, getInjectables } from './annotations'
 import service from './service'
 
+const log = service.logger({ name: 'dits_di' })
+
 export {
   service,
   Container,
@@ -70,7 +72,7 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
 
       const eventType = paramTypes[0]
       if (!eventType) {
-        console.warn(`Could not configure @Handler on ${target?.constructor?.name}:${propertyKey}(...)`)
+        log.warn(`Could not configure @Handler on ${target?.constructor?.name}:${propertyKey}(...)`)
         throw new Error('Unexpected params')
       }
 
@@ -80,7 +82,7 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
       }
 
       if (!proto) {
-        console.warn(`First parameter of @Handler on ${target?.constructor?.name}:${propertyKey}(...) must be a "DispatchEvent"; received ${eventType?.name || 'unknown'}`)
+        log.warn(`First parameter of @Handler on ${target?.constructor?.name}:${propertyKey}(...) must be a "DispatchEvent"; received ${eventType?.name || 'unknown'}`)
         throw new Error('Unexpected params')
       }
 
@@ -142,14 +144,14 @@ async function resolveDependencies<E extends DispatchEvent>(declaration: Handler
         const container: Container = service.getOrThrow('container')
         const lookup = container.get(diType)
         // const lookup = REGISTRY.get(diType)
-        // console.log('need to inject', idx, diType, REGISTRY, 'found', lookup)
+        // log.log('need to inject', idx, diType, REGISTRY, 'found', lookup)
         if (lookup) {
           results[idx] = lookup
         } else {
-          // console.warn('DID NOT FIND LOOKUP')
+          // log.warn('DID NOT FIND LOOKUP')
         }
       } else {
-        console.log('no inject on ', idx, declaration.dependencies[idxOffByOne], results[idx])
+        log.info('no inject on ', idx, declaration.dependencies[idxOffByOne], results[idx])
       }
     })
   return results
@@ -171,7 +173,7 @@ async function processVote<E extends DispatchEvent>(event: E, hd: HandlerDeclara
     if (failover) {
       return failover
     }
-    // console.warn('Some vote results failed', vote)
+    // log.warn('Some vote results failed', vote)
     throw new Error('Something went wrong while evaluating predicates')
   }
 
@@ -179,7 +181,7 @@ async function processVote<E extends DispatchEvent>(event: E, hd: HandlerDeclara
     if (failover) {
       return failover
     }
-    // console.warn('Some vote results failed', vote)
+    // log.warn('Some vote results failed', vote)
     throw new DispatchPredicateRejectionError('A condition to continue was not met')
   }
 

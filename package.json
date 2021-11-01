@@ -1,11 +1,11 @@
 {
   "name": "@dits/dits",
-  "version": "0.0.1",
+  "version": "0.0.100",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "dev": "tsc --watch",
     "build": "tsc",
+    "build:watch": "tsc --watch",
     "release": "echo 'Latest tag:' && git describe; read -p 'Version number?: ' VERSION; git add -A; git commit -am 'builds'; git push; git tag -a $VERSION -m VERSION; git push --tags"
   },
   "author": "hexly",
@@ -28,5 +28,8 @@
     "tslib": ">= 1.14.1",
     "zone.js": ">= 0.11.4"
   },
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "tslog": "3.2.2"
+  }
 }

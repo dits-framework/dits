@@ -1,8 +1,11 @@
 import '../zones/zones'
+
+
+import { ISettings, ISettingsParam, Logger } from "tslog"
+import EventEmitter from 'events'
+
 import { DispatchEvent, Container, HandlerRegistry, ComponentRegistry } from "./di"
 import { Principal, ANONYMOUS } from '../security/security'
-
-import EventEmitter from 'events'
 
 export const ROOT = Zone.current
 
@@ -42,6 +45,8 @@ export class Service {
 
   private events = new EventEmitter()
 
+  private log = new Logger({ name: 'dits_service' })
+
   private resolver: undefined | ((value: unknown) => void)
   private rejector: undefined | ((value: Error | any | void) => void)
   public promise = new Promise((res, rej) => {
@@ -54,6 +59,16 @@ export class Service {
       throw new Error('Cannot specify app zone properties multiple times')
     }
     this.properties = props
+  }
+
+
+  logger(name: string): Logger
+  logger(settings?: ISettingsParam, parentSettings?: ISettings): Logger
+  logger(settingsOrString?: ISettingsParam | string, parentSettings?: ISettings) {
+    if (settingsOrString instanceof String) {
+      return new Logger({ name: settingsOrString as string })
+    }
+    return new Logger(settingsOrString as ISettingsParam)
   }
 
   init(config: dits.config.Configuration, handler?: InitHandler): Promise<unknown>
@@ -154,7 +169,7 @@ export class Service {
       await Promise.all(this.handlerPromises)
       this.handlerPromises.length = 0
     } catch (err) {
-      console.warn('Failed to process handler promises for ' + hook, this.handlerPromises, err)
+      this.log.warn('Failed to process handler promises for ' + hook, this.handlerPromises, err)
       throw new Error(hook + ' failed')
     }
   }
