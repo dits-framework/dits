@@ -90,14 +90,14 @@ export class Service {
       let handlers = this.container?.get(HandlerRegistry)
       if (!handlers) {
         handlers = new HandlerRegistry()
-        this.container?.register(HandlerRegistry, handlers)
+        this.container!.register(HandlerRegistry, handlers)
       }
 
       // register an app-level component registry
       let components = this.container?.get(ComponentRegistry)
       if (!components) {
         components = new ComponentRegistry()
-        this.container?.register(ComponentRegistry, components)
+        this.container!.register(ComponentRegistry, components)
       }
 
       // setup our properties for the Zone itself
