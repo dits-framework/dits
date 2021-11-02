@@ -80,4 +80,10 @@ export function Component<T>(...nameOrHints: (string | Hint<T>)[]): Wrapper<T> {
   }
 }
 
+export type ComponentType =
+  (<T>() => Wrapper<T>)
+  | (<T>(name: string, ...hints: Hint<T>[]) => Wrapper<T>)
+  | (<T>(...hints: Hint<T>[]) => Wrapper<T>)
+  | (<T>(...nameOrHints: (string | Hint<T>)[]) => Wrapper<T>)
+
 const HINT_KEY = Symbol('hints')

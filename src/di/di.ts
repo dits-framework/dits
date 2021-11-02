@@ -2,18 +2,20 @@
 import Container from './container'
 import HandlerRegistry from './registry'
 import ComponentRegistry from '../component/registry'
-import { Component } from '../component/component'
+import { Component, ComponentType } from '../component/component'
 import { Inject, Metadata, getInjectables } from './annotations'
-import service from './service'
+import service, { Service } from './service'
 
 const log = service.logger({ name: 'dits_di' })
 
 export {
   service,
+  Service,
   Container,
   HandlerRegistry,
   ComponentRegistry,
-  Inject, Metadata, Component,
+  Inject, Metadata,
+  Component, ComponentType
 }
 
 export const DEK_KEY = Symbol("dek");
