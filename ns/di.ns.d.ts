@@ -1,6 +1,6 @@
 namespace dits {
   export namespace di {
-    export const DEK_KEY = Symbol("dek");
+    export const DEK_KEY = Symbol.for("dek");
     export class DispatchEvent {
       [DEK_KEY]: symbol
       constructor(public type: symbol) {

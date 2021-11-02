@@ -18,7 +18,7 @@ export {
   Component, ComponentType
 }
 
-export const DEK_KEY = Symbol("dek");
+export const DEK_KEY = Symbol.for("dek");
 export class DispatchEvent {
   [DEK_KEY]: symbol
   constructor(public type: symbol) {
@@ -28,10 +28,13 @@ export class DispatchEvent {
 
 export type DispatchEventHof<E extends DispatchEvent> =
   ((p1?: any, p2?: any, p3?: any, p4?: any, p5?: any, p6?: any) => DispatchPredicate<E>)
+export type DispatchEventHofType =
+  (<E extends DispatchEvent>(p1?: any, p2?: any, p3?: any, p4?: any, p5?: any, p6?: any) => DispatchPredicate<E>)
 
 export interface DispatchPredicate<E extends DispatchEvent> {
   (event: E, declaration: HandlerDeclaration<E>): boolean | DispatchPredicateVote;
 }
+export type DispatchPredicateType = <E extends DispatchEvent>(event: E, declaration: HandlerDeclaration<E>) => boolean | DispatchPredicateVote
 
 export class DispatchPredicateVote {
   constructor(
@@ -53,6 +56,7 @@ export interface HandlerDeclaration<E extends DispatchEvent> {
   method: Function,
   metadata: any
 }
+export class HandlerDeclarationType<E extends DispatchEvent> implements Partial<HandlerDeclaration<E>> { }
 
 
 type HandlerWrapper = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => unknown
@@ -106,6 +110,7 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
     service.handlers.register(registerType, decl)
   }
 }
+export type HandlerType = (<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]) => HandlerWrapper)
 
 // const invocationInjector = <E extends DispatchEvent>(paramTypes: any[], injectParamsIdx: number[], targetMethod: Function, predicates: DispatchPredicate<E>[]) =>
 const invocationInjector = <E extends DispatchEvent>(target: any, event: E, declaration: HandlerDeclaration<E>) =>
@@ -153,7 +158,7 @@ type DispatchVote<E extends DispatchEvent> = {
   error?: Error
 }
 
-const VOTE_PASSED = Symbol("vote_passed")
+const VOTE_PASSED = Symbol.for("vote_passed")
 async function processVote<E extends DispatchEvent>(event: E, hd: HandlerDeclaration<E>): Promise<symbol | any> {
   const vote = await executeVote(event, hd)
 
@@ -202,4 +207,4 @@ async function executeVote<E extends DispatchEvent>(event: E, hd: HandlerDeclara
   return vote
 }
 
-export const REGISTER_AS_META_KEY = Symbol("register_as");
+export const REGISTER_AS_META_KEY = Symbol.for("register_as");

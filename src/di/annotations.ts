@@ -1,6 +1,6 @@
-const METADATA_META_KEY = Symbol("metadata");
-const INJECT_META_KEY = Symbol("inject");
-const FAILOVER_META_KEY = Symbol("failover");
+const METADATA_META_KEY = Symbol.for("dits_metadata");
+const INJECT_META_KEY = Symbol.for("dits_inject");
+const FAILOVER_META_KEY = Symbol.for("dits_failover");
 
 /**
  * 
@@ -15,10 +15,20 @@ export const getInjectables = (target: any, propertyKey: string | symbol) => {
   return Reflect.getOwnMetadata(INJECT_META_KEY, target, propertyKey) || [] as number[]
 }
 
+export interface MetadataType {
+  (key: symbol, value: any): ((target: any, propertyKey: string) => any)
+
+  defineMetadata: (key: string | symbol, value: any, target: any, propertyKey: string | symbol) => void;
+  retrieveOwnMetadata: (target: any, propertyKey: string | symbol) => any;
+  retrieveMetadata: (target: any, propertyKey: string | symbol) => any;
+  getFailover: (target: any, propertyKey: string | symbol) => any;
+  PredicateFailoverValue: (value: any) => (target: any, propertyKey: string) => void;
+}
+
 /**
  * Define metadata on a handler. Used primarily for plugins.
  */
-export function Metadata(key: symbol, value: any) {
+export const Metadata: MetadataType = function Metadata(key: symbol, value: any) {
   return function (target: any, propertyKey: string) {
     const meta = Reflect.getMetadata(METADATA_META_KEY, target, propertyKey) || {}
     if (meta[key]) {

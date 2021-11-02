@@ -4,7 +4,7 @@ import { AsyncHook } from 'async_hooks'
 
 import 'reflect-metadata'
 
-import * as DI_LOCAL from './di/di'
+import * as DI from './di/di'
 import security_local, * as SecurityLocal from './security/security'
 
 export type Config = dits.config.Configuration
@@ -19,12 +19,17 @@ const DITS_INSTANCE = Symbol.for('dits')
 const g = global as any
 
 export type Exported = {
-  service: DI_LOCAL.Service,
-  Inject: (target: Object, propertyKey: string | symbol, parameterIndex: number) => unknown,
-  Component: DI_LOCAL.ComponentType,
-  Metadata: (key: symbol, value: any) => (target: any, propertyKey: string) => unknown,
-  ComponentRegistry: typeof DI_LOCAL.ComponentRegistry,
-  HandlerRegistry: typeof DI_LOCAL.HandlerRegistry,
+  service: DI.Service,
+  Inject: typeof DI.Inject,
+  Component: typeof DI.Component,
+  Handler: typeof DI.Handler,
+  Container: typeof DI.Container,
+  DispatchEvent: typeof DI.DispatchEvent,
+
+  // Metadata: (key: symbol, value: any) => (target: any, propertyKey: string) => unknown,
+  ComponentRegistry: typeof DI.ComponentRegistry,
+  HandlerRegistry: typeof DI.HandlerRegistry,
+  Metadata: typeof DI.Metadata,
   security: SecurityLocal.SecurityService,
   Security: {
     // principal: SecurityLocal.Principal
@@ -36,7 +41,7 @@ export type Exported = {
 }
 
 let mainExport: {
-  default: DI_LOCAL.Service,
+  default: DI.Service,
   exported: Exported
 }
 if (g[DITS_INSTANCE]) {
@@ -45,15 +50,19 @@ if (g[DITS_INSTANCE]) {
     exported: g[DITS_INSTANCE].exported
   }
 } else {
-  const { service, Inject, Component } = DI_LOCAL
+
+  const { service, Inject, Component } = DI
+
   const exported = {
     service,
-
     Inject,
-    Component: DI_LOCAL.Component,
-    Metadata: DI_LOCAL.Metadata,
-    ComponentRegistry: DI_LOCAL.ComponentRegistry,
-    HandlerRegistry: DI_LOCAL.HandlerRegistry,
+    Handler: DI.Handler,
+    Container: DI.Container,
+    DispatchEvent: DI.DispatchEvent,
+    Component: DI.Component,
+    Metadata: DI.Metadata,
+    ComponentRegistry: DI.ComponentRegistry,
+    HandlerRegistry: DI.HandlerRegistry,
 
     security: security_local,
     Security: {
@@ -71,7 +80,12 @@ if (g[DITS_INSTANCE]) {
 
 export const {
   service,
-  Inject, Component, Metadata,
+  Inject,
+  Component,
+  DispatchEvent,
+  Container,
+  Metadata,
+  Handler,
   ComponentRegistry, HandlerRegistry,
   security, Security, ZoneHook
 } = mainExport.exported

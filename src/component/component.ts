@@ -21,7 +21,9 @@ export function TypeHint(hintsFn: HintFn) {
 export function Component<T>(): Wrapper<T>
 export function Component<T>(name: string, ...hints: Hint<T>[]): Wrapper<T>
 export function Component<T>(...hints: Hint<T>[]): Wrapper<T>
-export function Component<T>(...nameOrHints: (string | Hint<T>)[]): Wrapper<T> {
+export function Component<T>(nameOrHint?: (string | Hint<T>), ...nameOrHints: (string | Hint<T>)[]): Wrapper<T> {
+
+  nameOrHint && nameOrHints.unshift(nameOrHint)
 
   let name: string | undefined
   let hints: Hint<T>[]
@@ -85,5 +87,6 @@ export type ComponentType =
   | (<T>(name: string, ...hints: Hint<T>[]) => Wrapper<T>)
   | (<T>(...hints: Hint<T>[]) => Wrapper<T>)
   | (<T>(...nameOrHints: (string | Hint<T>)[]) => Wrapper<T>)
+  | typeof Component
 
-const HINT_KEY = Symbol('hints')
+const HINT_KEY = Symbol.for('hints')

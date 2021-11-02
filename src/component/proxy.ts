@@ -1,7 +1,7 @@
 
-export const TARGET_KEY = Symbol('target')
+export const TARGET_KEY = Symbol.for('target')
 
-export const PROXY_KEY = Symbol('row')
+export const PROXY_KEY = Symbol.for('row')
 
 
 export const NO_TARGET = {}

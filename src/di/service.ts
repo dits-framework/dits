@@ -208,6 +208,13 @@ export class Service {
     }
   }
 
+  public Container() {
+    if (!this.container) {
+      throw new Error('Could not create new container without being initialized')
+    }
+    return new Container(this.container)
+  }
+
   private parseProperties() {
     const properties = { ...(this.properties || {}) }
     if (properties?.container) {
