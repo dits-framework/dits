@@ -12,7 +12,8 @@
   ],
   "compilerOptions": {
     "types": [
-      "@types/node"
+      "@types/node",
+      "@types/jest",
     ],
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
     /* Basic Options */

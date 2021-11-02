@@ -223,8 +223,6 @@ export class Service {
   }
 }
 
-
-
 // @ts-ignore
 const instance = global._DITS_GLOBAL = global._DITS_GLOBAL || new Service()
 export default instance
