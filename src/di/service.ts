@@ -76,6 +76,7 @@ export class Service {
   }
 
   init(config: dits.config.Configuration, handler?: InitHandler): Promise<unknown>
+  init(config: dits.config.Configuration, context: AppInitContext, handler?: InitHandler): Promise<unknown>
   async init(
     cfg: dits.config.Configuration,
     cOrH?: AppInitContext | InitHandler | undefined,
@@ -180,7 +181,6 @@ export class Service {
     appCtxOrHandler?: AppInitContext | InitHandler | undefined,
     handler?: InitHandler) {
     let appContext: AppInitContext | undefined
-
     // figure out which method they called
     if (appCtxOrHandler && (appCtxOrHandler as AppInitContext).authenticate) {
       // appCtx is good
