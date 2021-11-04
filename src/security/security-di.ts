@@ -1,13 +1,8 @@
-import { security } from '../index'
-import { Permission } from './security'
-import { DispatchEvent, HandlerDeclaration } from '../di/di'
+import { service, DispatchEvent, HandlerDeclaration } from '../di/di'
 
-export type HasAnyConfiguration = {
-  permissions: Permission[]
-}
-
-export const HasAny = <E extends DispatchEvent>(...permissions: Permission[]) => {
+export const HasAny = <E extends DispatchEvent>(...permissions: dits.security.Permission[]) => {
   return (e: E, declaration: HandlerDeclaration<E>) => {
-    return security.hasAny(...permissions)
+    const pp = service.principal.permissions
+    return permissions.reduce((s, n) => s || pp.indexOf(n) >= 0, false)
   }
 }

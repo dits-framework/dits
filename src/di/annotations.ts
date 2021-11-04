@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 const METADATA_META_KEY = Symbol.for("dits_metadata");
 const INJECT_META_KEY = Symbol.for("dits_inject");
 const FAILOVER_META_KEY = Symbol.for("dits_failover");

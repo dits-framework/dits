@@ -1,92 +1,84 @@
-// MOST IMPORTANT THING: we load and hotpatch zone.js FIRST
-import ZoneHook_Local from './zones/zones'
-import { AsyncHook } from 'async_hooks'
+// // MOST IMPORTANT THING: we load and hotpatch zone.js FIRST
+// import ZoneHook_Local from './zones/zones'
+// import { AsyncHook } from 'async_hooks'
 
-import 'reflect-metadata'
+// import 'reflect-metadata'
 
-import * as DI from './di/di'
-import security_local, * as SecurityLocal from './security/security'
+// import * as DI from './di/di'
+// import security_local, * as SecurityLocal from './security/security'
 
-export type Config = dits.config.Configuration
+// export type Config = dits.config.Configuration
 
-/// <reference path = "dits.ns.ts" />
-
-
+// /// <reference path = "dits.ns.ts" />
 
 
 
-const DITS_INSTANCE = Symbol.for('dits')
-const g = global as any
+// export interface Constructor<T> {
+//   new(...args: any[]): T;
+// }
 
-export type Exported = {
-  service: DI.Service,
-  Inject: typeof DI.Inject,
-  Component: typeof DI.Component,
-  Handler: typeof DI.Handler,
-  Container: typeof DI.Container,
-  DispatchEvent: typeof DI.DispatchEvent,
 
-  // Metadata: (key: symbol, value: any) => (target: any, propertyKey: string) => unknown,
-  ComponentRegistry: typeof DI.ComponentRegistry,
-  HandlerRegistry: typeof DI.HandlerRegistry,
-  Metadata: typeof DI.Metadata,
-  security: SecurityLocal.SecurityService,
-  Security: {
-    // principal: SecurityLocal.Principal
-    BasePrincipal: typeof SecurityLocal.BasePrincipal
-    AnonymousPrincipal: typeof SecurityLocal.AnonymousPrincipal
-    ANONYMOUS: SecurityLocal.AnonymousPrincipal
-  },
-  ZoneHook: AsyncHook
-}
+// const DITS_INSTANCE = Symbol.for('dits')
+// const g = global as any
 
-let mainExport: {
-  default: DI.Service,
-  exported: Exported
-}
-if (g[DITS_INSTANCE]) {
-  mainExport = {
-    default: g[DITS_INSTANCE].default,
-    exported: g[DITS_INSTANCE].exported
-  }
-} else {
+// export type Exported = {
+//   service: DI.Service,
+//   Inject: typeof DI.Inject,
+//   Component: typeof DI.Component,
+//   Handler: typeof DI.Handler,
+//   Container: Constructor<DI.Container>,
+//   DispatchEvent: Constructor<DI.DispatchEvent>,
 
-  const { service, Inject, Component } = DI
+//   // Metadata: (key: symbol, value: any) => (target: any, propertyKey: string) => unknown,
+//   ComponentRegistry: typeof DI.ComponentRegistry,
+//   HandlerRegistry: typeof DI.HandlerRegistry,
+//   Metadata: typeof DI.Metadata,
+//   security: SecurityLocal.SecurityService,
+//   ZoneHook: AsyncHook
+// }
 
-  const exported = {
-    service,
-    Inject,
-    Handler: DI.Handler,
-    Container: DI.Container,
-    DispatchEvent: DI.DispatchEvent,
-    Component: DI.Component,
-    Metadata: DI.Metadata,
-    ComponentRegistry: DI.ComponentRegistry,
-    HandlerRegistry: DI.HandlerRegistry,
+// let mainExport: {
+//   default: DI.Service,
+//   exported: Exported
+// }
+// if (g[DITS_INSTANCE]) {
+//   mainExport = {
+//     default: g[DITS_INSTANCE].default,
+//     exported: g[DITS_INSTANCE].exported
+//   }
+// } else {
 
-    security: security_local,
-    Security: {
-      BasePrincipal: SecurityLocal.BasePrincipal,
-      AnonymousPrincipal: SecurityLocal.AnonymousPrincipal,
-      ANONYMOUS: SecurityLocal.ANONYMOUS
-    },
-    ZoneHook: ZoneHook_Local
-  } as Exported
-  mainExport = {
-    default: service,
-    exported
-  }
-}
+//   const { service, Inject, Component } = DI
 
-export const {
-  service,
-  Inject,
-  Component,
-  DispatchEvent,
-  Container,
-  Metadata,
-  Handler,
-  ComponentRegistry, HandlerRegistry,
-  security, Security, ZoneHook
-} = mainExport.exported
-export default mainExport.default
+//   const exported = {
+//     service,
+//     Inject,
+//     Handler: DI.Handler,
+//     Container: DI.Container,
+//     DispatchEvent: DI.DispatchEvent,
+//     Component: DI.Component,
+//     Metadata: DI.Metadata,
+//     ComponentRegistry: DI.ComponentRegistry,
+//     HandlerRegistry: DI.HandlerRegistry,
+
+//     security: security_local,
+//     ZoneHook: ZoneHook_Local
+//   } as Exported
+//   mainExport = {
+//     default: service,
+//     exported
+//   }
+// }
+
+// export const {
+//   service,
+//   Inject,
+//   Component,
+//   DispatchEvent,
+//   Container,
+//   Metadata,
+//   Handler,
+//   ComponentRegistry, HandlerRegistry,
+//   security, ZoneHook
+// } = mainExport.exported
+// export default mainExport.default

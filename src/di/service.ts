@@ -1,19 +1,27 @@
 import '../zones/zones'
 
-
 import { ISettings, ISettingsParam, Logger } from "tslog"
 import EventEmitter from 'events'
 
 import { DispatchEvent, Container, HandlerRegistry, ComponentRegistry } from "./di"
-import { Principal, ANONYMOUS } from '../security/security'
+import { SecurityContext } from '..'
 
 export const ROOT = Zone.current
 
-export type Authenticator = (e: DispatchEvent) => Principal | PromiseLike<Principal>
-export const DEFAULT_AUTHENTICATOR = (e: DispatchEvent) => {
-  // enable logging eventually 
-  return ANONYMOUS as Principal
+export class AnonymousPrincipal implements dits.security.Principal {
+  authenticated = false
+  permissions: dits.security.Permission[] = []
 }
+export const ANONYMOUS = new AnonymousPrincipal()
+
+export type HasAnyConfiguration = {
+  permissions: dits.security.Permission[]
+}
+
+export type Authenticator = <E extends DispatchEvent>(e: E) => dits.security.Principal | Promise<dits.security.Principal>
+// export const DEFAULT_AUTHENTICATOR: Authenticator = (e: DispatchEvent) => {
+
+// }
 
 export interface AppInitContext {
   authenticate: Authenticator
@@ -47,6 +55,8 @@ export class Service {
   private properties?: any
   public config?: dits.config.Configuration
 
+  public anonymousPrincipal = new AnonymousPrincipal()
+
   private events = new EventEmitter()
 
   private log = new Logger({ name: 'dits_service' })
@@ -63,6 +73,12 @@ export class Service {
       throw new Error('Cannot specify app zone properties multiple times')
     }
     this.properties = props
+  }
+
+  get principal() {
+    const c = Zone.current.get('container') as Container || this.container
+    const ctx: SecurityContext | undefined = c?.get(SecurityContext)
+    return ctx?.principal || this.anonymousPrincipal
   }
 
 
@@ -190,7 +206,7 @@ export class Service {
     }
 
     if (!appContext) {
-      appContext = { authenticate: DEFAULT_AUTHENTICATOR }
+      appContext = { authenticate: () => this.anonymousPrincipal }
     }
 
     // if they're not interested in a callback, do nothing
@@ -231,5 +247,5 @@ export class Service {
 }
 
 // @ts-ignore
-const instance = global._DITS_GLOBAL = global._DITS_GLOBAL || new Service()
+const instance = global._DITS_GLOBAL = global._DITS_GLOBAL as Service || new Service()
 export default instance

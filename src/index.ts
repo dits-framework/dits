@@ -1,13 +1,29 @@
-import './zones/zones'
+import ZoneHook from './zones/zones'
 
 /// <reference path = "dits.ns.ts" />
 
-// NOTE: this is a really stupid hacky loader trick, because modules and types are stupid
-import exp from './exports'
-export * from './exports'
-export default exp
+import { service } from './di/di'
+import { SecurityContext } from './security/security'
+
+
+export {
+  ZoneHook,
+  SecurityContext
+}
+
+export {
+  Inject,
+  Handler,
+  Container,
+  Component,
+  DispatchEvent,
+  ComponentRegistry,
+  HandlerRegistry,
+  Metadata,
+} from './di/di'
 
 export type {
   DispatchEventHof, DispatchPredicate, HandlerDeclaration,
-  HandlerRegistry, ComponentRegistry
 } from './di/di'
+
+export default service
