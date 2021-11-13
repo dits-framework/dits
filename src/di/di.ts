@@ -93,7 +93,7 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
       predicates,
       // paramTypes,
       // injectParamsIdx,
-      dependencies,
+      dependencies: dependencies.reverse(),
       target,
       propertyKey,
       method: originalFn,
