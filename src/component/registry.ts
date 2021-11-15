@@ -45,13 +45,13 @@ export default class ComponentRegistry {
     // first iterate the list and set the correct proxies to dependencies
     for (const cd of this.handlers.values()) {
       if (cd.instance) {
-        console.log('Already found instance; skipping dep injection', cd)
+        process.env.DITS_DEBUG && console.log('Already found instance; skipping dep injection', cd)
         continue;
       }
       // console.log('creating', cd.type, cd.parameters, cd.dependencies, cd.hints)
       for (let idx = 0; idx < cd.parameters.length; idx++) {
         if (cd.dependencies[idx]) {
-          console.log(`strange, dep ${idx} already resolved; skipping`, cd)
+          process.env.DITS_DEBUG && console.log(`strange, dep ${idx} already resolved; skipping`, cd)
           continue
         }
         const dt = cd.parameters[idx]
@@ -74,7 +74,7 @@ export default class ComponentRegistry {
     // now iterate and construct as needed
     for (const cd of this.handlers.values()) {
       if (cd.instance) {
-        console.log('Already found instance; skipping instantiation', cd)
+        process.env.DITS_DEBUG && console.log('Already found instance; skipping instantiation', cd)
       } else {
         try {
           cd.instance = new cd.type(...cd.dependencies)
