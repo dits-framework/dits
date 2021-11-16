@@ -18,4 +18,8 @@ export default class HandlerRegistry {
     const current = this.handlers.get(event) || [];
     return current as unknown as HandlerDeclaration<E>[];
   }
+
+  unwrap() {
+    return this.handlers
+  }
 }

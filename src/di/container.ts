@@ -24,8 +24,8 @@ export default class Container {
     return s as T;
   }
 
-  register<T>(key: { new(...args: any[]): unknown; }, instance: T) {
-    if (this.get(key)) {
+  register<T>(key: { new(...args: any[]): unknown; }, instance: T, override = false) {
+    if (this.get(key) && !override) {
       throw new Error('Already registered a singleton of key ' + key);
     }
     this.singletons.set(key, instance);
@@ -39,5 +39,9 @@ export default class Container {
     } else if (parent instanceof Boolean && parent) {
       this.parent = undefined;
     }
+  }
+
+  unwrap() {
+    return this.singletons
   }
 }

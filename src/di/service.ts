@@ -147,10 +147,10 @@ export class Service {
     return Zone.current.get(key) as T || undefined
   }
 
-  getOrThrow<T>(key: string) {
+  getOrThrow<T>(key: string, errMessage?: string) {
     const s = this.get(key)
     if (!s) {
-      throw new Error(`${Zone.current.name} does not have property by key  ${key}`)
+      throw new Error(errMessage || `${Zone.current.name} does not have property by key  ${key}`)
     }
     return s as T
   }
