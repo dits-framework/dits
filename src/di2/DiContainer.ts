@@ -1,5 +1,8 @@
 // import { CONTAINER_PROPERTY } from '../zones/zones'
 import ComponentRegistry, { ComponentDeclaration } from "./ComponentRegistry"
+import HandlerRegistry, { DispatchEvent, EventConstructor, HandlerDeclaration, HANDLER_KEY } from "./Handlers"
+import Metadata from "./Metadata"
+import SmartProxy from "./proxy"
 
 // /**
 //  * Keeps track of classes and their instances
@@ -10,11 +13,11 @@ export default class DiContainer {
   static ZONE_PROPERTY = '_ditsContainer'
 
   private components = new ComponentRegistry()
+  public handlers = new HandlerRegistry()
 
   private singletons: Map<{ new(...args: any[]): unknown; }, unknown> = new Map();
 
   constructor(public parent?: DiContainer) { }
-
 
   static fromZone() {
     return Zone.current.get(DiContainer.ZONE_PROPERTY)! as DiContainer
@@ -45,8 +48,17 @@ export default class DiContainer {
     return this;
   }
 
+  // TODO rename to component
   declare<T>(key: { new(...args: any[]): unknown; }, declaration: ComponentDeclaration<T>, override = false) {
     this.components.register(key, declaration, override);
+    return this;
+  }
+
+
+  // handler<T>(key: { new(...args: any[]): unknown; }, declaration: ComponentDeclaration<T>, override = false) {
+
+  handler<E extends DispatchEvent>(event: EventConstructor<E>, declaration: HandlerDeclaration<E>) {
+    this.handlers.register(event, declaration);
     return this;
   }
 
@@ -61,7 +73,25 @@ export default class DiContainer {
 
   async initialize(scope: string, ...scopes: string[]) {
     for (const s of [scope, ...scopes]) {
-      await this.components.populate(s, this);
+      const graph = await this.components.populate(s, this);
+      for (const [key, value] of graph.entries()) {
+
+        // const wrap = SmartProxy.getSmartProxy(value)
+        // const sym = Symbol.for('handlers')
+        // const handlers: HandlerDeclaration<any>[] = Metadata.retrieveMetadata(key, sym)
+        // if (handlers) {
+        //   console.log(handlers)
+        // }
+
+        const handlers = Reflect.getMetadata(HANDLER_KEY, key) as HandlerDeclaration<any>[] | undefined
+        if (handlers) {
+          handlers.forEach(h => {
+            this.handlers.register(h.type, h)
+          })
+        }
+
+        this.provide(key, value)
+      }
     }
   }
 

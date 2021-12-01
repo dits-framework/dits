@@ -23,24 +23,24 @@ export interface ComponentInstance<T> extends ComponentDeclaration<T> {
 }
 
 export default class ComponentRegistry {
-  private handlers = new Map<Constructor<unknown>, ComponentDeclaration<unknown>>();
+  private declarations = new Map<Constructor<unknown>, ComponentDeclaration<unknown>>();
 
   register<E>(constructor: Constructor<E>, decl: ComponentDeclaration<E>, override: boolean = false) {
-    const current = this.handlers.get(constructor);
+    const current = this.declarations.get(constructor);
     if (current && !override) {
       throw new Error('Component already registered for type ' + constructor)
     }
 
-    this.handlers.set(constructor, decl);
+    this.declarations.set(constructor, decl);
   }
 
   getDeclarations<E>(event: Constructor<E>) {
-    const current = this.handlers.get(event) || [];
+    const current = this.declarations.get(event) || [];
     return current as unknown as ComponentDeclaration<E>[];
   }
 
   getHandlers() {
-    return this.handlers
+    return this.declarations
   }
 
   async populate(scope: string, container: DiContainer) {
@@ -48,7 +48,7 @@ export default class ComponentRegistry {
 
     const graph: Map<Constructor<unknown>, unknown> = new Map()
 
-    const targets = [...this.handlers.values()]
+    const targets = [...this.declarations.values()]
       .filter(cd => cd.scope === scope)
       .map(cd => ({
         ...cd,
@@ -115,9 +115,7 @@ export default class ComponentRegistry {
       throw failed
     }
 
-    for (const [key, value] of graph.entries()) {
-      container.provide(key, value)
-    }
+    return graph
   }
 
 

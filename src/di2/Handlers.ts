@@ -1,3 +1,14 @@
+import { Logger } from "tslog"
+import DiContainer from "./DiContainer";
+import { invocationInjector } from "./Invoker";
+
+import Metadata from './Metadata'
+
+const log = new Logger({ name: __filename })
+
+export const REGISTER_AS_META_KEY = Symbol.for("register_as");
+
+export const HANDLER_KEY = Symbol.for('dits_handlers')
 
 export const DispatchEventKey = Symbol.for('DitsEventKey')
 
@@ -7,7 +18,7 @@ export class DispatchEvent {
     this[DispatchEventKey] = key
   }
 }
-interface EventConstructor<E extends DispatchEvent> {
+export interface EventConstructor<E extends DispatchEvent> {
   new(...args: any[]): E;
 }
 
@@ -24,6 +35,7 @@ export class DispatchPredicateVote {
 
 export interface HandlerDeclaration<E extends DispatchEvent> {
   event: E,
+  type: E,
   handler: Function,
   predicates: DispatchPredicate<E>[],
   dependencies: any[],
@@ -31,6 +43,70 @@ export interface HandlerDeclaration<E extends DispatchEvent> {
   propertyKey: string,
   method: Function,
   metadata: any
+}
+
+export type HandlerWrapper = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => unknown
+
+export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]): HandlerWrapper {
+  return function dynamicHandler(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const paramTypes = Reflect.getMetadata("design:paramtypes", target, propertyKey) as any[]
+
+    const eventType = paramTypes[0]
+    if (!eventType) {
+      log.warn(`Could not configure @Handler on ${target?.constructor?.name}:${propertyKey}(...)`)
+      throw new Error('Unexpected params')
+    }
+
+    let proto = eventType
+    while (proto && proto != DispatchEvent) {
+      proto = Object.getPrototypeOf(eventType)
+    }
+
+    if (!proto) {
+      log.warn(`First parameter of @Handler on ${target?.constructor?.name}:${propertyKey}(...) must be a "DispatchEvent"; received ${eventType?.name || 'unknown'}`)
+      throw new Error('Unexpected params')
+    }
+
+    const originalFn = descriptor.value!
+    // const injectParamsIdx: number[] = getInjectables(target, propertyKey) || []
+    // const dependencies = injectParamsIdx.map(idx => paramTypes[idx])
+    const dependencies = paramTypes
+
+    const metadata = Metadata.retrieveMetadata(target, propertyKey)
+
+
+    // allow customization of what type of event is being registered for the handler
+    const registerType = Reflect.getMetadata(REGISTER_AS_META_KEY, target, propertyKey) || eventType
+
+    const decl: HandlerDeclaration<E> = {
+      event: eventType,
+      type: registerType,
+      handler: descriptor.value, // will get overwritten
+      predicates,
+      // paramTypes,
+      // injectParamsIdx,
+      dependencies: dependencies.reverse(),
+      target,
+      propertyKey,
+      method: originalFn,
+      metadata,
+    }
+
+    // descriptor.value = invocationInjector(paramTypes, injectParamsIdx, originalFn, predicates)
+    descriptor.value = invocationInjector(target, eventType, decl)
+    decl.handler = descriptor.value
+
+
+
+    // const container = DiContainer.fromZone()
+    // container.handler(registerType, decl)
+
+
+
+    const handlers = Reflect.getMetadata(HANDLER_KEY, target) || [] as HandlerDeclaration<any>[]
+    handlers.push(decl)
+    Reflect.defineMetadata(HANDLER_KEY, handlers, target.constructor)
+  }
 }
 
 export default class HandlerRegistry {
