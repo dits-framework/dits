@@ -1,6 +1,6 @@
 import '../zones/zones'
-import { Component } from './Component'
-import DiContainer from './DiContainer'
+import { Component, ComponentRegistry } from './components'
+import DiContainer from './container'
 
 import DitsTestHarness from '../testing/harness'
 

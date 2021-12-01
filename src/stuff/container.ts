@@ -1,8 +1,7 @@
 // import { CONTAINER_PROPERTY } from '../zones/zones'
-import ComponentRegistry, { ComponentDeclaration } from "./ComponentRegistry"
-import HandlerRegistry, { DispatchEvent, EventConstructor, HandlerDeclaration, HANDLER_KEY } from "./Handlers"
-import Metadata from "./Metadata"
-import SmartProxy from "./proxy"
+import { ComponentRegistry, ComponentDeclaration } from "./components"
+import HandlerRegistry, { HANDLER_KEY } from "./handlers"
+import { DispatchEvent, EventConstructor, HandlerDeclaration } from "./dispatch"
 
 // /**
 //  * Keeps track of classes and their instances

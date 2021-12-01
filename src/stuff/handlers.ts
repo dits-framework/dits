@@ -1,6 +1,8 @@
 import { Logger } from "tslog"
-import DiContainer from "./DiContainer";
-import { invocationInjector } from "./Invoker";
+import DiContainer from "./container";
+import { invocationInjector } from "./invoker";
+
+import { DispatchEvent, DispatchPredicate, EventConstructor, DispatchPredicateVote, DispatchEventKey, HandlerDeclaration } from './dispatch'
 
 import Metadata from './Metadata'
 
@@ -10,40 +12,6 @@ export const REGISTER_AS_META_KEY = Symbol.for("register_as");
 
 export const HANDLER_KEY = Symbol.for('dits_handlers')
 
-export const DispatchEventKey = Symbol.for('DitsEventKey')
-
-export class DispatchEvent {
-  public [DispatchEventKey]: string
-  constructor(key: string) {
-    this[DispatchEventKey] = key
-  }
-}
-export interface EventConstructor<E extends DispatchEvent> {
-  new(...args: any[]): E;
-}
-
-export interface DispatchPredicate<E extends DispatchEvent> {
-  (event: E, declaration: HandlerDeclaration<E>): boolean | DispatchPredicateVote;
-}
-export class DispatchPredicateVote {
-  constructor(
-    public proceed: boolean,
-    public warnings: string[] = [],
-    public metadata: any = {}
-  ) { }
-}
-
-export interface HandlerDeclaration<E extends DispatchEvent> {
-  event: E,
-  type: E,
-  handler: Function,
-  predicates: DispatchPredicate<E>[],
-  dependencies: any[],
-  target: any,
-  propertyKey: string,
-  method: Function,
-  metadata: any
-}
 
 export type HandlerWrapper = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => unknown
 

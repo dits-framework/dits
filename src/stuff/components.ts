@@ -1,4 +1,4 @@
-import DiContainer from "./DiContainer";
+import DiContainer from "./container";
 import SmartProxy from "./proxy";
 
 
@@ -22,7 +22,49 @@ export interface ComponentInstance<T> extends ComponentDeclaration<T> {
   proxy: SmartProxy<T>
 }
 
-export default class ComponentRegistry {
+/**
+ * Used to resolve types, in case of circular dependencies
+ */
+export function TypeHint(hintsFn: HintFn) {
+  return (constructor: Constructor<any>) => {
+    Reflect.defineMetadata(HINT_KEY, hintsFn, constructor)
+    return constructor
+  }
+}
+
+
+export function Component<T>(scope: string = 'app'): Wrapper<T> {
+  return (constructor: Constructor<T>) => {
+
+    // could look this up via metadata override (from some new decorator)
+    const name = constructor.name
+
+    // could look this up via metadata override (from some new decorator)
+    // (useful if you want ServiceA to be registered as ServiceB class for mocking / SPI / etc)
+    const registerAs = constructor
+
+    const explicitParams = Reflect.getMetadata(HINT_KEY, constructor)
+    const parameters = (explicitParams ? explicitParams() : Reflect.getMetadata("design:paramtypes", constructor)) || []
+
+    const cd: ComponentDeclaration<T> = {
+      name,
+      scope,
+      parameters,
+      dependencies: parameters.map(() => null),
+      constructor,
+      type: registerAs
+    }
+
+    // could look this up via metadata override (from some new decorator)
+    const container = DiContainer.fromZone()
+    container.declare(registerAs, cd)
+
+    return constructor
+  }
+}
+
+
+export class ComponentRegistry {
   private declarations = new Map<Constructor<unknown>, ComponentDeclaration<unknown>>();
 
   register<E>(constructor: Constructor<E>, decl: ComponentDeclaration<E>, override: boolean = false) {
@@ -134,3 +176,9 @@ export class FailedInstantiationError extends Error {
     super(message)
   }
 }
+
+// type Constructor = { new(...args: any[]): any }
+type Wrapper<T> = (constructor: Constructor<T>) => any
+type HintFn = () => any[]
+type Hint<T> = Constructor<T>
+const HINT_KEY = Symbol.for('hints')

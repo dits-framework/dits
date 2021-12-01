@@ -1,29 +1,37 @@
-import ZoneHook from './zones/zones'
+// import ZoneHook from './zones/zones'
 
-/// <reference path = "dits.ns.ts" />
-
-import { service } from './di/di'
-import { SecurityContext } from './security/security'
+// /// <reference path = "dits.ns.ts" />
 
 
-export {
-  ZoneHook,
-  SecurityContext
-}
+// import { SecurityContext } from './security/security'
 
-export {
-  Inject,
-  Handler,
-  Container,
-  Component,
-  DispatchEvent,
-  ComponentRegistry,
-  HandlerRegistry,
-  Metadata,
-} from './di/di'
 
-export type {
-  DispatchEventHof, DispatchPredicate, HandlerDeclaration,
-} from './di/di'
+// import HandlerRegistry, { Handler } from './stuff/handlers'
 
-export default service
+
+
+
+
+// export {
+//   ZoneHook,
+//   SecurityContext,
+
+//   HandlerRegistry, DispatchEvent, Handler
+// }
+
+// export * as ComponentRegistry from './stuff/components'
+
+
+
+
+
+// //   ComponentRegistry,
+// //   HandlerRegistry,
+// //   Metadata,
+// // } from './di2/Component'
+
+// export type {
+//   DispatchEventHof, DispatchPredicate, HandlerDeclaration,
+// } from './di/di'
+
+// export default service

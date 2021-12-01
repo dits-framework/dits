@@ -1,13 +1,9 @@
 import { root } from '../zones/zones' // always first
 
 import { ISettings, ISettingsParam, Logger } from "tslog"
-
-import ComponentRegistry from '../component/registry'
 import { SecurityContext } from '../security/security'
 
-import Container from '../di/container'
-
-import HandlerRegistry from '../di/registry'
+import DiContainer from './container'
 
 export class AnonymousPrincipal implements dits.security.Principal {
   authenticated = false
@@ -34,8 +30,7 @@ export type InitHandler =
 
 export default class Service {
 
-  public handlers = new HandlerRegistry()
-  public components = new ComponentRegistry()
+
   public anonymousPrincipal = ANONYMOUS
 
   private log = new Logger({ name: 'dits_service' })
@@ -44,15 +39,14 @@ export default class Service {
 
   constructor(
     public config: dits.config.Configuration,
-    public container: Container = root,
+    public container: DiContainer = root,
   ) { }
 
   get principal() {
-    const c = Zone.current.get('container') as Container || this.container
-    const ctx: SecurityContext | undefined = c?.get(SecurityContext)
+    const c = DiContainer.fromZone()
+    const ctx: SecurityContext | undefined = c.get(SecurityContext)
     return ctx?.principal || this.anonymousPrincipal
   }
-
 
   initialize(handler: InitHandler): Promise<any>
   initialize(config: ServiceConfig): Promise<any>

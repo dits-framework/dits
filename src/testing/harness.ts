@@ -1,6 +1,6 @@
-import { ZoneHook } from '..'; '../zones/zones'
+import ZoneHook from '../zones/zones'
 import { v4 as UUID } from 'uuid'
-import DiContainer from '../di2/DiContainer';
+import DiContainer from '../stuff/container';
 
 
 interface DoneCallback {

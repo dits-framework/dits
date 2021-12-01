@@ -1,9 +1,10 @@
 import '../zones/zones'
-import { Component } from './Component'
-import DiContainer from './DiContainer'
+import { Component } from './components'
+import DiContainer from './container'
 
 import DitsTestHarness from '../testing/harness'
-import { DispatchEvent, Handler, DispatchPredicate } from './Handlers'
+import { Handler } from './handlers'
+import { DispatchEvent, DispatchPredicate } from './dispatch'
 
 
 const harness = new DitsTestHarness()

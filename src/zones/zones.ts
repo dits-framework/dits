@@ -2,7 +2,7 @@ import 'zone.js'
 import 'reflect-metadata'
 import { createZonePatch } from './zone-patch'
 import AsyncPromiseHook from './promise-hook'
-import DiContainer from '../di2/DiContainer'
+import DiContainer from '../stuff/container'
 
 
 

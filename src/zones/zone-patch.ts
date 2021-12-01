@@ -1,6 +1,6 @@
 import asyncHooks from 'async_hooks'
 
-import Container from '../di2/DiContainer'
+import Container from '../stuff/container'
 
 export const createZonePatch = (store: Map<number, Zone>, rootContainer: Container) => {
 

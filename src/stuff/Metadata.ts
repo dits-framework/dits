@@ -1,20 +1,10 @@
-import 'reflect-metadata'
+/**
+ * REMOVE ALL THIS
+ */
+
 const METADATA_META_KEY = Symbol.for("dits_metadata");
 const INJECT_META_KEY = Symbol.for("dits_inject");
 const FAILOVER_META_KEY = Symbol.for("dits_failover");
-
-/**
- * 
- * Designate a handler parameter as a injectable dependency
- */
-export function Inject(target: Object, propertyKey: string | symbol, parameterIndex: number) {
-  const injectParamsIdx: number[] = Reflect.getOwnMetadata(INJECT_META_KEY, target, propertyKey) || [];
-  injectParamsIdx.push(parameterIndex);
-  Reflect.defineMetadata(INJECT_META_KEY, injectParamsIdx, target, propertyKey);
-}
-export const getInjectables = (target: any, propertyKey: string | symbol) => {
-  return Reflect.getOwnMetadata(INJECT_META_KEY, target, propertyKey) || [] as number[]
-}
 
 export interface MetadataType {
   (key: symbol, value: any): ((target: any, propertyKey: string) => any)
@@ -29,7 +19,7 @@ export interface MetadataType {
 /**
  * Define metadata on a handler. Used primarily for plugins.
  */
-export const Metadata: MetadataType = function Metadata(key: symbol, value: any) {
+const Metadata: MetadataType = function Metadata(key: symbol, value: any) {
   return function (target: any, propertyKey: string) {
     const meta = Reflect.getMetadata(METADATA_META_KEY, target, propertyKey) || {}
     if (meta[key]) {
@@ -40,6 +30,7 @@ export const Metadata: MetadataType = function Metadata(key: symbol, value: any)
   };
 }
 
+export default Metadata
 
 /**
  * If voting for handler execution fails, supply this value instead.

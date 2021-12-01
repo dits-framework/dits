@@ -1,4 +1,4 @@
-import Service from './service2'
+import Service from './service'
 
 
 

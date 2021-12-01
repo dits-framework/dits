@@ -1,8 +1,8 @@
 import { Logger } from "tslog"
 
-import DiContainer from './DiContainer';
+import DiContainer from './container';
 import Metadata from './Metadata'
-import { DispatchEvent, DispatchPredicate, HandlerDeclaration } from './Handlers'
+import { DispatchEvent, DispatchPredicate, HandlerDeclaration } from './dispatch'
 
 const log = new Logger({ name: __filename })
 
