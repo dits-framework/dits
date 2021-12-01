@@ -1,6 +1,6 @@
 import ZoneHook from '../zones/zones'
 import { v4 as UUID } from 'uuid'
-import DiContainer from '../stuff/container';
+import Container from '../di/container';
 
 
 interface DoneCallback {
@@ -27,13 +27,13 @@ export default class DitsTestHarness {
       new Promise(async (resolve, reject) => {
 
 
-        const parent = DiContainer.fromZone()
+        const parent = Container.fromZone()
         const child = parent.createChild()
 
         const testZone = Zone.current.fork({
           name: 'test-' + UUID(),
           properties: {
-            [DiContainer.ZONE_PROPERTY]: child
+            [Container.ZONE_PROPERTY]: child
           }
         })
         await testZone.run(async () => {

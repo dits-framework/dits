@@ -1,6 +1,6 @@
 import '../zones/zones'
-import { Component } from './components'
-import DiContainer from './container'
+import { Component } from '../di/components'
+import Container from '../di/container'
 
 import DitsTestHarness from '../testing/harness'
 import { Handler } from './handlers'
@@ -54,7 +54,7 @@ const createClasses = () => {
   function ExampleHandler(path: string, ...predicates: DispatchPredicate<FooEvent>[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
       // do whatever other metadata stuff you want / need for this implementation
-      Handler(...predicates)(target, propertyKey, descriptor)
+      Handler(FooEvent, ...predicates)(target, propertyKey, descriptor)
     }
   }
 
@@ -82,7 +82,7 @@ const createClasses = () => {
 it('manually provided components work?', harness.wrap(async () => {
   const { FooEvent, FooHandler } = createClasses()
 
-  const container = DiContainer.fromZone()
+  const container = Container.fromZone()
 
   await container.initialize('app')
 

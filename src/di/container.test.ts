@@ -1,6 +1,6 @@
 import '../zones/zones'
 import { Component, ComponentRegistry } from './components'
-import DiContainer from './container'
+import Container from './container'
 
 import DitsTestHarness from '../testing/harness'
 
@@ -65,7 +65,7 @@ const createClasses = () => {
 it('manually provided components work?', harness.wrap(async () => {
   const { ManuallyProvidedComponent } = createClasses()
 
-  const container = DiContainer.fromZone()
+  const container = Container.fromZone()
   container.provide(ManuallyProvidedComponent, new ManuallyProvidedComponent())
   await container.initialize('app')
 
@@ -76,7 +76,7 @@ it('manually provided components work?', harness.wrap(async () => {
 it('manually provided components missing blows up', harness.wrap(async () => {
   const { ManuallyProvidedComponent } = createClasses()
 
-  const container = DiContainer.fromZone()
+  const container = Container.fromZone()
   await expect(container.initialize('app')).rejects.toThrowError()
 
   console.log(Zone.current.name, container)

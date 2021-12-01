@@ -1,4 +1,4 @@
-import DiContainer from "./container";
+import Container from "./container";
 import SmartProxy from "./proxy";
 
 
@@ -56,7 +56,7 @@ export function Component<T>(scope: string = 'app'): Wrapper<T> {
     }
 
     // could look this up via metadata override (from some new decorator)
-    const container = DiContainer.fromZone()
+    const container = Container.fromZone()
     container.declare(registerAs, cd)
 
     return constructor
@@ -85,7 +85,7 @@ export class ComponentRegistry {
     return this.declarations
   }
 
-  async populate(scope: string, container: DiContainer) {
+  async populate(scope: string, container: Container) {
     const unresolved = new Set<ComponentDeclaration<unknown>>()
 
     const graph: Map<Constructor<unknown>, unknown> = new Map()

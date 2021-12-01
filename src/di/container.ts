@@ -1,13 +1,13 @@
 // import { CONTAINER_PROPERTY } from '../zones/zones'
 import { ComponentRegistry, ComponentDeclaration } from "./components"
-import HandlerRegistry, { HANDLER_KEY } from "./handlers"
-import { DispatchEvent, EventConstructor, HandlerDeclaration } from "./dispatch"
+import { HandlerRegistry, HANDLER_KEY } from "../dispatch/handlers"
+import { DispatchEvent, EventConstructor, HandlerDeclaration } from "../dispatch/dispatch"
 
 // /**
 //  * Keeps track of classes and their instances
 //  * TODO: make this zone specific? 
 //  */
-export default class DiContainer {
+export default class Container {
 
   static ZONE_PROPERTY = '_ditsContainer'
 
@@ -16,10 +16,10 @@ export default class DiContainer {
 
   private singletons: Map<{ new(...args: any[]): unknown; }, unknown> = new Map();
 
-  constructor(public parent?: DiContainer) { }
+  constructor(public parent?: Container) { }
 
   static fromZone() {
-    return Zone.current.get(DiContainer.ZONE_PROPERTY)! as DiContainer
+    return Zone.current.get(Container.ZONE_PROPERTY)! as Container
   }
 
   get<T>(key: { new(...args: any[]): unknown; }) {
@@ -61,9 +61,9 @@ export default class DiContainer {
     return this;
   }
 
-  reset(parent?: DiContainer | Boolean) {
+  reset(parent?: Container | Boolean) {
     this.singletons.clear();
-    if (parent instanceof DiContainer) {
+    if (parent instanceof Container) {
       this.parent = parent;
     } else if (parent instanceof Boolean && parent) {
       this.parent = undefined;
@@ -99,6 +99,6 @@ export default class DiContainer {
   }
 
   createChild() {
-    return new DiContainer(this)
+    return new Container(this)
   }
 }

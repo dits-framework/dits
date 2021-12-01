@@ -1,5 +1,5 @@
 import ZonePatch, { root } from './zones'
-import DiContainer from '../stuff/container'
+import Container from '../di/container'
 
 const simulateTest = async (parent: Zone) => {
   const app = parent.fork({
@@ -28,7 +28,7 @@ it('puts the lotion on its skin', async () => {
 })
 
 it('thing', async () => {
-  const container = Zone.current.get(DiContainer.ZONE_PROPERTY)
+  const container = Zone.current.get(Container.ZONE_PROPERTY)
   expect(container).toBe(root)
 })
 

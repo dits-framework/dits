@@ -1,15 +1,11 @@
 import { root } from '../zones/zones' // always first
 
 import { ISettings, ISettingsParam, Logger } from "tslog"
-import { SecurityContext } from '../security/security'
+import { ANONYMOUS, SecurityContext } from '../security/security'
 
-import DiContainer from './container'
+import Container from './container'
 
-export class AnonymousPrincipal implements dits.security.Principal {
-  authenticated = false
-  permissions: dits.security.Permission[] = []
-}
-export const ANONYMOUS = new AnonymousPrincipal()
+
 
 
 export interface ServiceConfig {
@@ -30,22 +26,25 @@ export type InitHandler =
 
 export default class Service {
 
-
-  public anonymousPrincipal = ANONYMOUS
+  static ZONE_KEY = '_ditsService'
 
   private log = new Logger({ name: 'dits_service' })
 
   public zone?: Zone
 
+  static fromZone() {
+    return Zone.current.get(Service.ZONE_KEY)
+  }
+
   constructor(
     public config: dits.config.Configuration,
-    public container: DiContainer = root,
+    public container: Container = root,
   ) { }
 
   get principal() {
-    const c = DiContainer.fromZone()
+    const c = Container.fromZone()
     const ctx: SecurityContext | undefined = c.get(SecurityContext)
-    return ctx?.principal || this.anonymousPrincipal
+    return ctx?.principal || ANONYMOUS
   }
 
   initialize(handler: InitHandler): Promise<any>
@@ -55,10 +54,25 @@ export default class Service {
     handler = handler || configOrHandler as InitHandler
     this.zone = Zone.current.fork({
       name: config?.zone?.name || 'app',
-      properties: config?.zone?.properties
+      properties: {
+        ...(config?.zone?.properties || {}),
+        [Service.ZONE_KEY]: this
+      }
     })
 
     return this.zone!.run(handler!, this, [new InitContext(this)])
+  }
+
+  async fork(name: string, properties?: any) {
+    const container = this.container.createChild()
+    return this.zone!.fork({
+      name,
+      properties: {
+        ...(properties || {}),
+        [Container.ZONE_PROPERTY]: container,
+        [Service.ZONE_KEY]: this
+      }
+    })
   }
 
 }

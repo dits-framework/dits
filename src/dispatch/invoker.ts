@@ -1,7 +1,7 @@
 import { Logger } from "tslog"
 
-import DiContainer from './container';
-import Metadata from './Metadata'
+import Container from '../di/container';
+import Metadata from '../di/Metadata'
 import { DispatchEvent, DispatchPredicate, HandlerDeclaration } from './dispatch'
 
 const log = new Logger({ name: __filename })
@@ -23,8 +23,14 @@ export class DispatchPredicateVote {
 }
 
 // const invocationInjector = <E extends DispatchEvent>(paramTypes: any[], injectParamsIdx: number[], targetMethod: Function, predicates: DispatchPredicate<E>[]) =>
-export const invocationInjector = <E extends DispatchEvent>(target: any, event: E, declaration: HandlerDeclaration<E>) =>
+export const invocationInjector = <E extends DispatchEvent>(target: any, declaration: HandlerDeclaration<E>) =>
   async (...args: any[]) => {
+
+
+    // we assume the zone's container has the root event!
+    const eventType = declaration.type
+    const container = Container.fromZone()
+    const event = container.getOrThrow(eventType, 'Could not locate event in container ' + eventType.name)
 
     args = await resolveDependencies(declaration, args)
     const vote = await processVote(event, declaration)
@@ -46,7 +52,7 @@ async function resolveDependencies<E extends DispatchEvent>(declaration: Handler
     .forEach((diType, idxOffByOne) => {
       const idx = idxOffByOne + 1
       if (results[idx] === null || results[idx] === undefined) {
-        const container = DiContainer.fromZone()
+        const container = Container.fromZone()
         const lookup = container.get(diType)
         // const lookup = REGISTRY.get(diType)
         // log.log('need to inject', idx, diType, REGISTRY, 'found', lookup)

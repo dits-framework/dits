@@ -2,12 +2,12 @@ import 'zone.js'
 import 'reflect-metadata'
 import { createZonePatch } from './zone-patch'
 import AsyncPromiseHook from './promise-hook'
-import DiContainer from '../stuff/container'
+import Container from '../di/container'
 
 
 
 // @ts-ignore
-export const root = global._DITS_ROOT = global._DITS_ROOT as DiContainer || new DiContainer()
+export const root = global._DITS_ROOT = global._DITS_ROOT as Container || new Container()
 
 // first, we declare the global zone here so we can 
 // monkey patch zone.js awesome work

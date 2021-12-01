@@ -23,8 +23,8 @@ export class DispatchPredicateVote {
 }
 
 export interface HandlerDeclaration<E extends DispatchEvent> {
-  event: E,
-  type: E,
+  // event: E,
+  type: EventConstructor<E>,
   handler: Function,
   predicates: DispatchPredicate<E>[],
   dependencies: any[],

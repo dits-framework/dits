@@ -1,10 +1,10 @@
 import { Logger } from "tslog"
-import DiContainer from "./container";
+import Container from "../di/container";
 import { invocationInjector } from "./invoker";
 
 import { DispatchEvent, DispatchPredicate, EventConstructor, DispatchPredicateVote, DispatchEventKey, HandlerDeclaration } from './dispatch'
 
-import Metadata from './Metadata'
+import Metadata from '../di/Metadata'
 
 const log = new Logger({ name: __filename })
 
@@ -15,11 +15,13 @@ export const HANDLER_KEY = Symbol.for('dits_handlers')
 
 export type HandlerWrapper = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => unknown
 
-export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicate<E>[]): HandlerWrapper {
+export function Handler<E extends DispatchEvent>(eventType: EventConstructor<E>, ...predicates: DispatchPredicate<E>[]): HandlerWrapper {
   return function dynamicHandler(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const paramTypes = Reflect.getMetadata("design:paramtypes", target, propertyKey) as any[]
 
-    const eventType = paramTypes[0]
+
+
+    // const eventType = paramTypes[0]
     if (!eventType) {
       log.warn(`Could not configure @Handler on ${target?.constructor?.name}:${propertyKey}(...)`)
       throw new Error('Unexpected params')
@@ -47,7 +49,6 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
     const registerType = Reflect.getMetadata(REGISTER_AS_META_KEY, target, propertyKey) || eventType
 
     const decl: HandlerDeclaration<E> = {
-      event: eventType,
       type: registerType,
       handler: descriptor.value, // will get overwritten
       predicates,
@@ -61,7 +62,7 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
     }
 
     // descriptor.value = invocationInjector(paramTypes, injectParamsIdx, originalFn, predicates)
-    descriptor.value = invocationInjector(target, eventType, decl)
+    descriptor.value = invocationInjector(target, decl)
     decl.handler = descriptor.value
 
 
@@ -77,7 +78,7 @@ export function Handler<E extends DispatchEvent>(...predicates: DispatchPredicat
   }
 }
 
-export default class HandlerRegistry {
+export class HandlerRegistry {
   private handlers: Map<EventConstructor<DispatchEvent>, HandlerDeclaration<DispatchEvent>[]> = new Map();
 
   register<E extends DispatchEvent>(event: EventConstructor<E>, decl: HandlerDeclaration<E>) {
