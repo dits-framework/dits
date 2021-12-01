@@ -31,7 +31,9 @@
   },
   "description": "",
   "dependencies": {
-    "tslog": "3.2.2"
+    "@types/uuid": "^8.3.3",
+    "tslog": "3.2.2",
+    "uuid": "^8.3.2"
   },
   "volta": {
     "node": "16.13.0"

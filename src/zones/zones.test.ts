@@ -1,4 +1,4 @@
-import ZonePatch from './zones'
+import ZonePatch, { root, CONTAINER_PROPERTY } from './zones'
 
 const simulateTest = async (parent: Zone) => {
   const app = parent.fork({
@@ -26,7 +26,10 @@ it('puts the lotion on its skin', async () => {
   ZonePatch.disable()
 })
 
-
+it('thing', async () => {
+  const container = Zone.current.get(CONTAINER_PROPERTY)
+  expect(container).toBe(root)
+})
 
 function recurseZones(level: number): PromiseLike<number[]> {
   const name = 'zone' + level

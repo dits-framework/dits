@@ -1,7 +1,13 @@
 import 'zone.js'
+import 'reflect-metadata'
 import { createZonePatch } from './zone-patch'
 import AsyncPromiseHook from './promise-hook'
+import DiContainer from '../di2/DiContainer'
 
+
+
+// @ts-ignore
+export const root = global._DITS_ROOT = global._DITS_ROOT as DiContainer || new DiContainer()
 
 // first, we declare the global zone here so we can 
 // monkey patch zone.js awesome work
@@ -13,7 +19,7 @@ declare namespace global {
 const store = new Map<number, Zone>()
 
 // we create a subclass of Zone that can use our store if needed
-const patchedZone = createZonePatch(store)
+const patchedZone = createZonePatch(store, root)
 
 //after that, we hook into async_hooks whenever async/await + promises are at play
 const promiseHook = new AsyncPromiseHook(store)

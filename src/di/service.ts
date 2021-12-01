@@ -6,7 +6,7 @@ import EventEmitter from 'events'
 import { DispatchEvent, Container, HandlerRegistry, ComponentRegistry } from "./di"
 import { SecurityContext } from '..'
 
-export const ROOT = Zone.current
+// export const ROOT = Zone.current
 
 export class AnonymousPrincipal implements dits.security.Principal {
   authenticated = false

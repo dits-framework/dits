@@ -1,6 +1,10 @@
 import asyncHooks from 'async_hooks'
 
-export const createZonePatch = (store: Map<number, Zone>) => {
+import Container from '../di2/DiContainer'
+
+export const createZonePatch = (store: Map<number, Zone>, rootContainer: Container) => {
+
+
 
   // TODO: clean up this block, as it is naaasty
 
@@ -12,6 +16,17 @@ export const createZonePatch = (store: Map<number, Zone>) => {
     const asyncId = asyncHooks.executionAsyncId()
     store.set(asyncId, this)
     return origRun.apply(this, args)
+  }
+
+  const origGet = zoneProto.get
+  zoneProto.get = function (key: string) {
+    if (key === '_ditsContainer') {
+      const result = origGet.apply(this, [key])
+      if (!result) {
+        return rootContainer
+      }
+    }
+    return origGet.apply(this, [key])
   }
 
   // @ts-ignore
