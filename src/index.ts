@@ -4,8 +4,9 @@ import ZoneHook from './zones/zones'
 
 import Container from './di/container'
 import Service from './di/service'
+import SmartProxy from './di/proxy'
 
-export { Service, Container, ZoneHook }
+export { Service, Container, ZoneHook, SmartProxy }
 
 export { Component, ComponentRegistry } from './di/components'
 export { DispatchEvent, DispatchPredicate, HandlerDeclaration } from './dispatch/dispatch'

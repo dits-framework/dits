@@ -56,6 +56,7 @@ export default class Service {
       name: config?.zone?.name || 'app',
       properties: {
         ...(config?.zone?.properties || {}),
+        [Container.ZONE_PROPERTY]: this.container,
         [Service.ZONE_KEY]: this
       }
     })

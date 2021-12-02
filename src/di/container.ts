@@ -1,7 +1,10 @@
 // import { CONTAINER_PROPERTY } from '../zones/zones'
+import { Logger } from "tslog"
 import { ComponentRegistry, ComponentDeclaration } from "./components"
 import { HandlerRegistry, HANDLER_KEY } from "../dispatch/handlers"
 import { DispatchEvent, EventConstructor, HandlerDeclaration } from "../dispatch/dispatch"
+
+const log = new Logger({ name: __filename })
 
 // /**
 //  * Keeps track of classes and their instances
@@ -71,6 +74,7 @@ export default class Container {
   }
 
   async initialize(scope: string, ...scopes: string[]) {
+    log.info('initializing', this.handlers.unwrap().size, this.parent?.handlers.unwrap().size)
     for (const s of [scope, ...scopes]) {
       const graph = await this.components.populate(s, this);
       for (const [key, value] of graph.entries()) {

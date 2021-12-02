@@ -35,6 +35,9 @@ export function TypeHint(hintsFn: HintFn) {
 
 export function Component<T>(scope: string = 'app'): Wrapper<T> {
   return (constructor: Constructor<T>) => {
+    if (!scope) {
+      throw new Error(`Failed to invoke ${constructor.name} – component scope must be defined`)
+    }
 
     // could look this up via metadata override (from some new decorator)
     const name = constructor.name
