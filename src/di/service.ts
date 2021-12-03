@@ -33,13 +33,16 @@ export default class Service {
   public zone?: Zone
 
   static fromZone() {
-    return Zone.current.get(Service.ZONE_KEY)
+    const container = Container.fromZone()
+    return container.getOrThrow(Service, 'Could not locate Service from Zone\'s container.')
   }
 
   constructor(
     public config: dits.config.Configuration,
     public container: Container = root,
-  ) { }
+  ) {
+    container.provide(Service, this, true)
+  }
 
   get principal() {
     const c = Container.fromZone()

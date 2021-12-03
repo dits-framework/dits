@@ -14,7 +14,7 @@ export default class Container {
 
   static ZONE_PROPERTY = '_ditsContainer'
 
-  private components = new ComponentRegistry()
+  public components = new ComponentRegistry()
   public handlers = new HandlerRegistry()
 
   private singletons: Map<{ new(...args: any[]): unknown; }, unknown> = new Map();
@@ -74,7 +74,6 @@ export default class Container {
   }
 
   async initialize(scope: string, ...scopes: string[]) {
-    log.info('initializing', this.handlers.unwrap().size, this.parent?.handlers.unwrap().size)
     for (const s of [scope, ...scopes]) {
       const graph = await this.components.populate(s, this);
       for (const [key, value] of graph.entries()) {
