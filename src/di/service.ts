@@ -67,7 +67,7 @@ export default class Service {
     return this.zone!.run(handler!, this, [new InitContext(this)])
   }
 
-  async fork(name: string, properties?: any) {
+  fork(name: string, properties?: any) {
     const container = this.container.createChild()
     return this.zone!.fork({
       name,

@@ -42,7 +42,7 @@ export function Handler<E extends DispatchEvent>(eventType: EventConstructor<E>,
     // const dependencies = injectParamsIdx.map(idx => paramTypes[idx])
     const dependencies = paramTypes
 
-    const metadata = Metadata.retrieveMetadata(target, propertyKey)
+    const metadata = Metadata.retrieveMetadata(target, propertyKey) || {}
 
 
     // allow customization of what type of event is being registered for the handler
@@ -72,7 +72,7 @@ export function Handler<E extends DispatchEvent>(eventType: EventConstructor<E>,
 
 
 
-    const handlers = Reflect.getMetadata(HANDLER_KEY, target) || [] as HandlerDeclaration<any>[]
+    const handlers = Reflect.getMetadata(HANDLER_KEY, target.constructor) || [] as HandlerDeclaration<any>[]
     handlers.push(decl)
     Reflect.defineMetadata(HANDLER_KEY, handlers, target.constructor)
   }
