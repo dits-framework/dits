@@ -30,7 +30,7 @@ export const invocationInjector = <E extends DispatchEvent>(target: any, declara
     // we assume the zone's container has the root event!
     const eventType = declaration.type
     const container = Container.fromZone()
-    const event = container.getOrThrow(eventType, 'Could not locate event in container ' + eventType.name)
+    const event: E = container.getOrThrow(eventType, 'Could not locate event in container ' + eventType.name)
 
     args = await resolveDependencies(declaration, args)
     const vote = await processVote(event, declaration)

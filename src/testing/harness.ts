@@ -13,6 +13,8 @@ type ProvidesCallback = ((cb: DoneCallback) => void | undefined) | (() => Promis
 
 export default class DitsTestHarness {
 
+  private idx = 0
+
   init() {
     ZoneHook.enable()
   }
@@ -28,7 +30,7 @@ export default class DitsTestHarness {
 
 
         const parent = Container.fromZone()
-        const child = parent.createChild()
+        const child = parent.createChild(`harness-${this.idx++}`)
 
         const testZone = Zone.current.fork({
           name: 'test-' + UUID(),

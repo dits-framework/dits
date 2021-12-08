@@ -19,13 +19,13 @@ export default class Container {
 
   private singletons: Map<{ new(...args: any[]): unknown; }, unknown> = new Map();
 
-  constructor(public parent?: Container) { }
+  constructor(public name: string, public parent?: Container) { }
 
   static fromZone() {
     return Zone.current.get(Container.ZONE_PROPERTY)! as Container
   }
 
-  get<T>(key: { new(...args: any[]): unknown; }) {
+  get<T, C extends { new(...args: any[]): T; }>(key: C): T | undefined {
     let thing = this.singletons.get(key);
     if (!thing) {
       thing = this.parent?.get(key);
@@ -33,7 +33,7 @@ export default class Container {
     return thing as T | undefined;
   }
 
-  getOrThrow<T>(key: { new(...args: any[]): T; }, errMessage?: string) {
+  getOrThrow<T, C extends { new(...args: any[]): T; }>(key: C, errMessage?: string): T {
     const s = this.get(key);
     if (!s) {
       throw new Error(errMessage || 'Could not locate dependency by key ' + key);
@@ -75,33 +75,36 @@ export default class Container {
 
   async initialize(scope: string, ...scopes: string[]) {
     for (const s of [scope, ...scopes]) {
-      const graph = await this.components.populate(s, this);
-      for (const [key, value] of graph.entries()) {
-
-        // const wrap = SmartProxy.getSmartProxy(value)
-        // const sym = Symbol.for('handlers')
-        // const handlers: HandlerDeclaration<any>[] = Metadata.retrieveMetadata(key, sym)
-        // if (handlers) {
-        //   console.log(handlers)
-        // }
-
-        const handlers = Reflect.getMetadata(HANDLER_KEY, key) as HandlerDeclaration<any>[] | undefined
-        if (handlers) {
-          handlers.forEach(h => {
-            this.handlers.register(h.type, h)
-          })
+      for (const container of this.getAncestry()) {
+        const graph = await container.components.populate(s, this);
+        for (const [key, value] of graph.entries()) {
+          const handlers = Reflect.getMetadata(HANDLER_KEY, key) as HandlerDeclaration<any>[] | undefined
+          if (handlers) {
+            handlers.forEach(h => {
+              this.handlers.register(h.type, h)
+            })
+          }
+          this.provide(key, value)
         }
-
-        this.provide(key, value)
       }
     }
+  }
+
+  private getAncestry(asc: boolean = true) {
+    const ancestry = []
+    let target: Container | undefined = this
+    while (target) {
+      asc ? ancestry.unshift(target) : ancestry.push(target)
+      target = target.parent
+    }
+    return ancestry
   }
 
   unwrap() {
     return this.singletons
   }
 
-  createChild() {
-    return new Container(this)
+  createChild(name: string) {
+    return new Container(name, this)
   }
 }

@@ -32,7 +32,7 @@ export default class Service {
 
   public zone?: Zone
 
-  static fromZone() {
+  static fromZone(): Service {
     const container = Container.fromZone()
     return container.getOrThrow(Service, 'Could not locate Service from Zone\'s container.')
   }
@@ -55,20 +55,20 @@ export default class Service {
   async initialize(configOrHandler: InitHandler | ServiceConfig, handler?: InitHandler) {
     const config: ServiceConfig = handler ? configOrHandler as ServiceConfig : {}
     handler = handler || configOrHandler as InitHandler
-    this.zone = Zone.current.fork({
-      name: config?.zone?.name || 'app',
-      properties: {
-        ...(config?.zone?.properties || {}),
-        [Container.ZONE_PROPERTY]: this.container,
-        [Service.ZONE_KEY]: this
-      }
-    })
-
+    // this.zone = Zone.current.fork({
+    //   name: config?.zone?.name || 'app',
+    //   properties: {
+    //     ...(config?.zone?.properties || {}),
+    //     [Container.ZONE_PROPERTY]: this.container,
+    //     [Service.ZONE_KEY]: this
+    //   }
+    // })
+    this.zone = Zone.root
     return this.zone!.run(handler!, this, [new InitContext(this)])
   }
 
   fork(name: string, properties?: any) {
-    const container = this.container.createChild()
+    const container = this.container.createChild(name)
     return this.zone!.fork({
       name,
       properties: {
