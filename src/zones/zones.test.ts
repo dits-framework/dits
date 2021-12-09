@@ -1,6 +1,29 @@
 import ZonePatch, { root } from './zones'
 import Container from '../di/container'
 
+import http from 'http'
+
+class DummyService {
+
+  doTheThing() {
+    return new Promise((resolve, reject) => {
+      const options = {
+        host: 'www.everra.com',
+        path: '/integers/?num=1&min=1&max=10&col=1&base=10&format=plain&rnd=new'
+      };
+
+      const data: any[] = []
+      http.request(options, res => {
+        res.on('data', chunk => data.push(chunk))
+        res.on('end', () => resolve(data))
+        res.on('error', reject)
+      }).end();
+    })
+  }
+}
+
+const dummy = new DummyService()
+
 const simulateTest = async (parent: Zone) => {
   const app = parent.fork({
     name: 'app'
@@ -10,7 +33,8 @@ const simulateTest = async (parent: Zone) => {
 
   await app.run(async () => {
     before = Zone.current.name
-    await Promise.resolve()
+    // await Promise.resolve()
+    await dummy.doTheThing()
     after = Zone.current.name
   })
   return { before, after }

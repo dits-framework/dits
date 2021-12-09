@@ -38,8 +38,6 @@ export function Handler<E extends DispatchEvent>(eventType: EventConstructor<E>,
     }
 
     const originalFn = descriptor.value!
-    // const injectParamsIdx: number[] = getInjectables(target, propertyKey) || []
-    // const dependencies = injectParamsIdx.map(idx => paramTypes[idx])
     const dependencies = paramTypes
 
     const metadata = Metadata.retrieveMetadata(target, propertyKey) || {}
@@ -52,9 +50,7 @@ export function Handler<E extends DispatchEvent>(eventType: EventConstructor<E>,
       type: registerType,
       handler: descriptor.value, // will get overwritten
       predicates,
-      // paramTypes,
-      // injectParamsIdx,
-      dependencies: dependencies.reverse(),
+      dependencies,
       target,
       propertyKey,
       method: originalFn,
