@@ -48,11 +48,10 @@ export const invocationInjector = <E extends DispatchEvent>(target: any, declara
 
 async function resolveDependencies<E extends DispatchEvent>(declaration: HandlerDeclaration<E>, args: any[]) {
   const results = [...args]
+  const container = Container.fromZone()
   declaration.dependencies
-    .forEach((diType, idxOffByOne) => {
-      const idx = idxOffByOne + 1
+    .forEach((diType, idx) => {
       if (results[idx] === null || results[idx] === undefined) {
-        const container = Container.fromZone()
         const lookup = container.get(diType)
         // const lookup = REGISTRY.get(diType)
         // log.log('need to inject', idx, diType, REGISTRY, 'found', lookup)
@@ -62,7 +61,7 @@ async function resolveDependencies<E extends DispatchEvent>(declaration: Handler
           // log.warn('DID NOT FIND LOOKUP')
         }
       } else {
-        log.info('no inject on ', idx, declaration.dependencies[idxOffByOne], results[idx])
+        process.env.DITS_DEBUG && log.info('no inject on ', idx, declaration.dependencies[idx], results[idx])
       }
     })
   return results
