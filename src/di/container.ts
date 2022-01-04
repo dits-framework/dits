@@ -10,6 +10,9 @@ const log = new Logger({ name: __filename })
 //  * Keeps track of classes and their instances
 //  * TODO: make this zone specific? 
 //  */
+
+
+type ConstructorOrAbstractConstructor<T> = { new(...args: any[]): T; } | Function & { prototype: T }
 export default class Container {
 
   static ZONE_PROPERTY = '_ditsContainer'
@@ -17,7 +20,7 @@ export default class Container {
   public components = new ComponentRegistry()
   public handlers = new HandlerRegistry()
 
-  private singletons: Map<{ new(...args: any[]): unknown; }, unknown> = new Map();
+  private singletons: Map<ConstructorOrAbstractConstructor<any>, unknown> = new Map();
 
   constructor(public name: string, public parent?: Container) { }
 
@@ -25,7 +28,7 @@ export default class Container {
     return Zone.current.get(Container.ZONE_PROPERTY)! as Container
   }
 
-  get<T, C extends { new(...args: any[]): T; }>(key: C): T | undefined {
+  get<T, C extends ConstructorOrAbstractConstructor<T>>(key: C): T | undefined {
     let thing = this.singletons.get(key);
     if (!thing) {
       thing = this.parent?.get(key);
@@ -33,7 +36,7 @@ export default class Container {
     return thing as T | undefined;
   }
 
-  getOrThrow<T, C extends { new(...args: any[]): T; }>(key: C, errMessage?: string): T {
+  getOrThrow<T, C extends ConstructorOrAbstractConstructor<T>>(key: C, errMessage?: string): T {
     const s = this.get(key);
     if (!s) {
       throw new Error(errMessage || 'Could not locate dependency by key ' + key);
@@ -41,7 +44,7 @@ export default class Container {
     return s as T;
   }
 
-  provide<T>(key: { new(...args: any[]): unknown; }, instance: T, override = false) {
+  provide<T>(key: ConstructorOrAbstractConstructor<T>, instance: T, override = false) {
     // TODO should we override / sync with components?
     if (this.get(key) && !override) {
       throw new Error('Already registered a singleton of key ' + key);
@@ -51,7 +54,7 @@ export default class Container {
   }
 
   // TODO rename to component
-  declare<T>(key: { new(...args: any[]): unknown; }, declaration: ComponentDeclaration<T>, override = false) {
+  declare<T>(key: ConstructorOrAbstractConstructor<T>, declaration: ComponentDeclaration<T>, override = false) {
     this.components.register(key, declaration, override);
     return this;
   }

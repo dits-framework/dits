@@ -3,9 +3,7 @@ import SmartProxy from "./proxy";
 
 
 
-export interface Constructor<E> {
-  new(...args: any[]): E;
-}
+export type Constructor<E> = { new(...args: any[]): E; } | Function & { prototype: E }
 export interface ComponentDeclaration<T> {
   instance?: T,
   scope: string,
@@ -145,7 +143,8 @@ export class ComponentRegistry {
         process.env.DITS_DEBUG && console.log('Already found instance; skipping instantiation', cd)
       } else {
         try {
-          cd.instance = new cd.type(...cd.dependencies)
+          const type = cd.type as { new(...args: any[]): unknown; }
+          cd.instance = new type(...cd.dependencies)
         } catch (err: any) {
           failed.failures.push({
             declaration: cd,
