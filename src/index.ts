@@ -8,7 +8,7 @@ import SmartProxy from './di/proxy'
 
 export { Service, Container, ZoneHook, SmartProxy }
 
-export { Component, ComponentRegistry } from './di/components'
+export { Component, ComponentRegistry, Constructor } from './di/components'
 export { DispatchEvent, DispatchPredicate, HandlerDeclaration } from './dispatch/dispatch'
 export { Handler, HandlerRegistry } from './dispatch/handlers'
 export { SecurityContext, Authenticator, ANONYMOUS } from './security/security'

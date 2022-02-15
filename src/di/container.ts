@@ -30,8 +30,8 @@ export default class Container {
 
   get<T, C extends ConstructorOrAbstractConstructor<T>>(key: C): T | undefined {
     let thing = this.singletons.get(key);
-    if (!thing) {
-      thing = this.parent?.get(key);
+    if (!thing && this.parent) {
+      thing = this.parent.get(key);
     }
     return thing as T | undefined;
   }
